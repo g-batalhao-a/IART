@@ -3,9 +3,10 @@ import copy
 class Node:
     parent = None
 
-    def __init__(self, matrix, empty_pos, cost: int=0):
+    def __init__(self, matrix, empty_pos, cost: int=0, dist: int=0):
         self.matrix = matrix
         self.empty_pos = empty_pos
+        self.dist=dist
         self.cost=cost
 
     def __eq__(self, o):
@@ -17,6 +18,15 @@ class Node:
     def print(self):
         for x in self.matrix:
             print(x)
+        print("---------")
+    def __lt__(self,o):
+        return (self.dist+self.cost)<(o.dist+o.cost)
+    def setDist(self,newDist):
+        self.dist=newDist
+    def setCost(self,newCost):
+        self.cost=newCost
+    def setParent(self,node):
+        self.parent = node
 
 
 
@@ -55,11 +65,17 @@ class Graph:
             node = node.parent
         path.reverse()
         return path
+
+    def expanded_states(self):
+        count=0
+        for level in self.depth:
+            count+=len(level)
+        return count
     
 
 
 
-def expand(state: Node, cost: int=0):
+def expand(state: Node, a_star: bool=False):
     expansion = []
 
     matrix, pos = state.matrix,state.empty_pos
@@ -72,25 +88,25 @@ def expand(state: Node, cost: int=0):
         copy_matrix = copy.deepcopy(matrix)
         zero,numb=matrix[row][col],matrix[row-1][col]
         copy_matrix[row][col],copy_matrix[row-1][col]=numb,zero
-        expansion.append(Node(copy_matrix,(row-1)*size+col,manhattan(copy_matrix)+cost))
+        expansion.append(Node(copy_matrix,(row-1)*size+col,manhattan(copy_matrix),state.dist+1)) if a_star else expansion.append(Node(copy_matrix,(row-1)*size+col,manhattan(copy_matrix),0))
     # Move Down
     if(row!=(size-1)):
         copy_matrix = copy.deepcopy(matrix)
         zero,numb=matrix[row][col],matrix[row+1][col]
         copy_matrix[row][col],copy_matrix[row+1][col]=numb,zero
-        expansion.append(Node(copy_matrix,(row+1)*size+col,manhattan(copy_matrix)+cost))
+        expansion.append(Node(copy_matrix,(row+1)*size+col,manhattan(copy_matrix),state.dist+1)) if a_star else expansion.append(Node(copy_matrix,(row+1)*size+col,manhattan(copy_matrix),0))
     # Move Left
     if(col!=0):
         copy_matrix = copy.deepcopy(matrix)
         zero,numb=matrix[row][col],matrix[row][col-1]
         copy_matrix[row][col],copy_matrix[row][col-1]=numb,zero
-        expansion.append(Node(copy_matrix,row*size+(col-1),manhattan(copy_matrix)+cost))
+        expansion.append(Node(copy_matrix,row*size+(col-1),manhattan(copy_matrix),state.dist+1)) if a_star else expansion.append(Node(copy_matrix,row*size+(col-1),manhattan(copy_matrix),0))
     # Move Right
     if(col!=(col_size-1)):
         copy_matrix = copy.deepcopy(matrix)
         zero,numb=matrix[row][col],matrix[row][col+1]
         copy_matrix[row][col],copy_matrix[row][col+1]=numb,zero
-        expansion.append(Node(copy_matrix,row*size+(col+1),manhattan(copy_matrix)+cost))
+        expansion.append(Node(copy_matrix,row*size+(col+1),manhattan(copy_matrix),state.dist+1)) if a_star else expansion.append(Node(copy_matrix,row*size+(col+1),manhattan(copy_matrix),0))
 
     for children in expansion:
         children.parent = state
@@ -160,43 +176,67 @@ def bfs(state: Node, max_depth: int = 100, goal: list=[[1,2,3],[4,5,6],[7,8,0]])
             print("Found Goal. Depth:", depth + 1)
             return graph, depth + 1
 
-def heuristic(state: Node, a_star: bool = False,max_depth: int = 20, goal: list=[[1,2,3],[4,5,6],[7,8,0]]):
+def heuristic(state: Node, a_star: bool = False,max_depth: int = 5000, goal: list=[[1,2,3],[4,5,6],[7,8,0]]):
     graph = Graph()
+    state.setDist(0)
     stack = [state]
     graph.new_depth()
     graph.add_node(state, 1)
 
     depth = 1
     while depth != max_depth and len(stack) != 0:
+        stack.sort()
         graph.new_depth()
         node = stack.pop(0)
         if node.matrix == goal:
-            print("For goal:", node.matrix, "Depth: ",depth)
             _path = graph.path(node)
+            print("For goal:", node.matrix, "Depth: ",len(_path)-1)
             print_solution(_path)
             return graph,depth
         else:
-            if a_star:
-                expanded = expand(node,depth)
-            else :
-                expanded = expand(node)
-            [graph.add_node(x, depth + 1) for x in expanded]
             graph.visit(node)
-            [stack.append(x) for x in expanded if x not in graph.visited]
-            stack.sort(key=lambda node: node.cost)
+            expanded = expand(node,a_star)
+            [graph.add_node(x, depth + 1) for x in expanded]
+            for children in expanded:
+                if children in graph.visited:
+                    continue
+                if children in stack:
+                    if (children.cost+node.dist+1<children.cost+children.dist) and a_star:
+                        children.setParent(node)
+                        children.setDist(node.dist+1)
+                else:
+                    stack.append(children)
+            
         depth += 1
 
+def checkSolvability(matrix: list):
+    flat_list = [item for sublist in matrix for item in sublist]
+    inversions = 0
+
+    for x in range(0,len(flat_list)):
+        for y in range(x+1,len(flat_list)):
+            inversions+=1 if (flat_list[x]>flat_list[y] and flat_list[y]!=0) else 0
+                
+    return inversions%2==0
 
 
 if __name__ == "__main__":
-    start = [[4,3,8],[7,1,2],[0,5,6]]
+    #start = [[5,2,8],[4,1,7],[0,3,6]]
     #start = [[1,2,3],[4,5,6],[7,0,8]]
     #start = [[0,2,3],[1,5,6],[4,7,8]]
+    start = [[5,1,3,4],[2,0,7,8],[10,6,11,12],[9,13,14,15]]
     pos = calculate_z_pos(start)
+    if(checkSolvability(start)):
+        print(start," is solvable")
+    else:
+        print(start," isn't solvable")
     #print("--- BFS ---")
     #graph, depth = bfs(Node(start, pos))
-    #print("--- GREEDY ---")
-    #graph, depth = heuristic(Node(start, pos))
     print("--- GREEDY ---")
-    graph, depth = heuristic(Node(start, pos),True)
+    graph, depth = heuristic(Node(start, pos),False,1000000,[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,0]])
+    print(graph.expanded_states())
+
+    #print("--- A* ---")
+    #graph, depth = heuristic(Node(start, pos),True,1000000,[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,0]])
+    #print(graph.expanded_states())
 
