@@ -1,31 +1,35 @@
 from tube import *
 
+
 class Node:
     parent = None
 
-    def __init__(self, gamestate: Game, cost: int=0, dist: int=0):
+    def __init__(self, gamestate: Game, cost: int = 0, dist: int = 0):
         self.gamestate = gamestate
-        self.dist=dist
-        self.cost=cost
+        self.dist = dist
+        self.cost = cost
 
     def __eq__(self, o):
-        return o.gamestate == self.gamestate
+        return self.gamestate.__eq__(o.gamestate)
 
     def __hash__(self):
-        return self.matrix[0][0] + self.matrix[1][2] - self.matrix[0][2] - self.matrix[2][1]
+        return ".".join([str(tube) for tube in self.gamestate.get_tubes()])
 
     def print(self):
         self.gamestate.print()
-        print("-----"*len(self.gamestate.tubes))
-    def __lt__(self,o):
-        return (self.dist+self.cost)<(o.dist+o.cost)
-    def setDist(self,newDist):
-        self.dist=newDist
-    def setCost(self,newCost):
-        self.cost=newCost
-    def setParent(self,node):
-        self.parent = node
+        print("-----" * len(self.gamestate.tubes))
 
+    def __lt__(self, o):
+        return (self.dist + self.cost) < (o.dist + o.cost)
+
+    def setDist(self, newDist):
+        self.dist = newDist
+
+    def setCost(self, newCost):
+        self.cost = newCost
+
+    def setParent(self, node):
+        self.parent = node
 
 
 def print_solution(path: list):
@@ -64,8 +68,7 @@ class Graph:
         return path
 
     def expanded_states(self):
-        count=0
+        count = 0
         for level in self.depth:
-            count+=len(level)
+            count += len(level)
         return count
-    

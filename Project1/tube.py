@@ -32,16 +32,19 @@ class Tube:
                 return False
         return True
 
+    def __eq__(self, other):
+        return self.balls == other.balls
+
     def put_ball(self, ball):
         if self.is_full():
             return False
         self.balls.append(ball)
 
-    def print(self, place:int):
+    def print(self, place: int):
         try:
-            print("|", self.balls[place], "|",end="")
+            print("|", self.balls[place], "|", end="")
         except:
-            print("|   |",end="")
+            print("|   |", end="")
 
     def clone(self):
         return copy.deepcopy(self)
@@ -95,13 +98,22 @@ class Game:
     def move_ball(self, from_i: int, to_i: int):
         self.tubes[to_i].put_ball(self.tubes[from_i].remove_ball())
 
+    def get_tubes(self):
+        return self.tubes
+
+    def __eq__(self, other):
+        for tube in self.tubes:
+            if tube not in other.tubes:
+                return False
+        return True
+
     def print(self):
-        for places in range(3,-1,-1):
+        for places in range(3, -1, -1):
             for tube in self.tubes:
                 tube.print(places)
             print("")
 
-        print(" --- "*len(self.tubes))
+        print(" --- " * len(self.tubes))
 
     def clone(self):
         return copy.deepcopy(self)
