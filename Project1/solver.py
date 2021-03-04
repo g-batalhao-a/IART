@@ -9,7 +9,7 @@ def new_states(state: Node, a_star: bool = False):
         new_gamestate = state.gamestate.clone()
         from_i, to_i = move
         new_gamestate.move_ball(from_i, to_i)
-        expansion.append(Node(new_gamestate))
+        expansion.append(Node(new_gamestate, 0, state.dist + 1))
 
     for children in expansion:
         children.parent = state
@@ -38,50 +38,83 @@ def manhattan(matrix: list):
 
     return distance
 
-
 def bfs(state: Node, max_depth: int = 10000):
     states = [state]
 
-    graph = Graph()
-    graph.new_depth()
-    graph.add_node(state, 1)
+    graph_bfs = Graph()
+    graph_bfs.new_depth()
+    graph_bfs.add_node(state, 1)
     for depth in range(1, max_depth + 1):
         expanded_states = []
-        for s in states:
-            if s.gamestate.finished():
-                print("Found Goal. Depth:", depth)
-                return graph, depth
-            if s in graph.visited:
-                continue
-            aux = new_states(s)
+        for node in states:
+            if node.gamestate.finished():
+                print("Found Goal. Depth:", node.dist)
+                return graph_bfs, node
+            aux = new_states(node)
             for e in aux:
                 expanded_states.append(e)
-            graph.visit(s)
+            graph_bfs.visit(node)
         states = expanded_states
-        graph.new_depth()
-        [graph.add_node(x, depth + 1) for x in states]
+        graph_bfs.new_depth()
+        [graph_bfs.add_node(x, depth + 1) for x in states]
+    return None, None
+
+
+def bfs_optimized(state: Node, max_depth: int = 10000):
+    states = [state]
+
+    graph_bfs = Graph()
+    graph_bfs.new_depth()
+    graph_bfs.add_node(state, 1)
+    for depth in range(1, max_depth + 1):
+        expanded_states = []
+        for node in states:
+            if node.gamestate.finished():
+                print("Found Goal. Depth:", node.dist)
+                return graph_bfs, node
+            if node in graph_bfs.visited:
+                continue
+            aux = new_states(node)
+            for e in aux:
+                expanded_states.append(e)
+            graph_bfs.visit(node)
+        states = expanded_states
+        graph_bfs.new_depth()
+        [graph_bfs.add_node(x, depth + 1) for x in states]
+    return None, None
 
 
 def dfs(state: Node, max_depth: int = 1000):
-    graph = Graph()
+    graph_dfs = Graph()
     stack = [state]
 
-    graph.new_depth()
-    graph.add_node(state, 1)
+    graph_dfs.new_depth()
+    graph_dfs.add_node(state, 1)
 
-    depth = 1
+    depth = 0
     while depth != max_depth and len(stack) != 0:
-        graph.new_depth()
+        graph_dfs.new_depth()
         node = stack.pop(0)
-        graph.visit(node)
+        graph_dfs.visit(node)
         if node.gamestate.finished():
-            print("Found Goal. Depth:", depth)
-            return graph, depth
+            print("Found Goal. Depth:", node.dist)
+            return graph_dfs, node
         else:
             expanded = new_states(node)
-            [graph.add_node(x, depth + 1) for x in expanded]
-            [stack.insert(0, x) for x in expanded if x not in graph.visited]
+            [graph_dfs.add_node(x, x.dist + 1) for x in expanded]
+            [stack.insert(0, x) for x in expanded if x not in graph_dfs.visited]
         depth += 1
+
+    return None, None
+
+
+def ids(state: Node, max_depth: int = 1000):
+    for depth in range(1, max_depth):
+        graph_ids, node = dfs(state, depth)
+        if (graph_ids, node) != (None, None):
+            return graph_ids, node
+
+    return state, None
 
 
 def heuristic(state: Node, a_star: bool = False, max_depth: int = 5000):
@@ -134,18 +167,24 @@ def print_solution(path: list):
 
 
 if __name__ == "__main__":
-    puzzle1 = Game([Tube([1]), Tube([1, 1, 1])])
+    puzzle = Game([Tube([1]), Tube([1, 1, 1])])
     puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
-    init_state1 = Node(puzzle1)
     init_state = Node(puzzle)
 
     #print("--- BFS ---")
-    #graph, depth = bfs(init_state)
+    #graph, goal = bfs(init_state)
 
-    print("--- DFS ---")
-    graph, depth = dfs(init_state)
-    goals = []
-    [goals.append(x) for x in graph.find_goals(depth)]
-    for goal in goals:
+    #print("--- BFS-OPT ---")
+    #graph, goal = bfs_optimized(init_state)
+
+    #print("--- DFS ---")
+    #graph, goal = dfs(init_state)
+
+    print("--- IDS ---")
+    graph, goal = ids(init_state)
+
+    try:
         path = graph.path(goal)
         print_solution(path)
+    except:
+        print("No solution found!")

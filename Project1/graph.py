@@ -31,16 +31,19 @@ class Node:
     def setParent(self, node):
         self.parent = node
 
+    def clone(self):
+        return copy.deepcopy(self)
+
 
 def print_solution(path: list):
     [x.print() for x in path]
 
 
 class Graph:
-    visited = []
 
-    def __init__(self, depth=[]):
-        self.depth = depth
+    def __init__(self, depth=None, visited=None):
+        self.depth = [] if depth is None else depth
+        self.visited = [] if visited is None else visited
 
     def new_depth(self):
         self.depth.append([])
