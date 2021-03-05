@@ -8,8 +8,11 @@ def new_states(state: Node, a_star: bool = False):
     for move in moves:
         new_gamestate = state.gamestate.clone()
         from_i, to_i = move
-        new_gamestate.move_ball(from_i, to_i)
-        expansion.append(Node(new_gamestate, 0, state.dist + 1))
+        new_gamestate.move_ball(from_i, to_i) 
+        node = Node(new_gamestate, 0, state.dist + 1)
+        if a_star:
+            node.setCost(node.better_nWrong_heuristics())
+        expansion.append(node)
 
     for children in expansion:
         children.parent = state
@@ -17,6 +20,7 @@ def new_states(state: Node, a_star: bool = False):
     return expansion
 
 
+# TODO
 # Num of wrong, but wrong is defined by level of depth
 def manhattan(matrix: list):
     size = len(matrix)
@@ -53,7 +57,6 @@ def bfs(state: Node, max_depth: int = 10000):
             aux = new_states(node)
             for e in aux:
                 expanded_states.append(e)
-            graph_bfs.visit(node)
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
@@ -113,11 +116,13 @@ def ids(state: Node, max_depth: int = 1000):
         graph_ids, node = dfs(state, depth)
         if (graph_ids, node) != (None, None):
             return graph_ids, node
+        print(depth)
 
     return state, None
 
 
-def heuristic(state: Node, a_star: bool = False, max_depth: int = 5000):
+# TODO
+def greedy(state: Node, a_star: bool = False, max_depth: int = 5000):
     graph = Graph()
     state.setDist(0)
     stack = [state]
@@ -126,14 +131,15 @@ def heuristic(state: Node, a_star: bool = False, max_depth: int = 5000):
 
     depth = 1
     while depth != max_depth and len(stack) != 0:
-        stack.sort()
+        if a_star:
+            stack.sort()
+        else:
+            stack.sort(key = lambda x: x.cost)
         graph.new_depth()
         node = stack.pop(0)
-        if node.matrix == goal:
-            _path = graph.path(node)
-            print("For goal:", node.matrix, "Depth: ", len(_path) - 1)
-            print_solution(_path)
-            return graph, depth
+        if node.gamestate.finished():
+            print("Found Goal. Depth:", node.dist)
+            return graph, node
         else:
             graph.visit(node)
             expanded = new_states(node, a_star)
@@ -148,9 +154,11 @@ def heuristic(state: Node, a_star: bool = False, max_depth: int = 5000):
                 else:
                     stack.append(children)
 
+        print(depth)
         depth += 1
 
 
+# TODO Function to check if a problem is possible to be solved
 def checkSolvability(matrix: list):
     flat_list = [item for sublist in matrix for item in sublist]
     inversions = 0
@@ -167,21 +175,28 @@ def print_solution(path: list):
 
 
 if __name__ == "__main__":
-    puzzle = Game([Tube([1]), Tube([1, 1, 1])])
-    puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
+    #puzzle = Game([Tube([1]), Tube([1, 1, 1])])
+    #puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
+    puzzle = Game([Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])])
     init_state = Node(puzzle)
 
-    #print("--- BFS ---")
-    #graph, goal = bfs(init_state)
+    # print("--- BFS ---")
+    # graph, goal = bfs(init_state)
 
-    #print("--- BFS-OPT ---")
-    #graph, goal = bfs_optimized(init_state)
+    # print("--- BFS-OPT ---")
+    # graph, goal = bfs_optimized(init_state)
 
-    #print("--- DFS ---")
-    #graph, goal = dfs(init_state)
+    # print("--- DFS ---")
+    # graph, goal = dfs(init_state)
 
-    print("--- IDS ---")
-    graph, goal = ids(init_state)
+    # print("--- IDS ---")
+    # graph, goal = ids(init_state)
+
+    # print("--- Greedy ---")
+    # graph, goal = greedy(init_state, False)
+
+    print("--- A-Star ---")
+    graph, goal = greedy(init_state, True)
 
     try:
         path = graph.path(goal)

@@ -34,9 +34,23 @@ class Node:
     def clone(self):
         return copy.deepcopy(self)
 
+    def better_nWrong_heuristics(self):
+        cost = 0
 
-def print_solution(path: list):
-    [x.print() for x in path]
+        for tube in self.gamestate.tubes:
+            balls = tube.balls.copy()
+            idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
+            if idx == -1:
+                continue
+
+            balls = balls[idx:]
+            balls.reverse()
+            
+            for i, ball in enumerate(balls):
+                cost += i + 1
+
+        return cost
+                
 
 
 class Graph:
