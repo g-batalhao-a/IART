@@ -54,6 +54,7 @@ def bfs(state: Node, max_depth: int = 10000):
             for e in aux:
                 expanded_states.append(e)
             graph_bfs.visit(node)
+        #print(depth)
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
@@ -78,6 +79,7 @@ def bfs_optimized(state: Node, max_depth: int = 10000):
             for e in aux:
                 expanded_states.append(e)
             graph_bfs.visit(node)
+        #print(depth)
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
@@ -103,6 +105,7 @@ def dfs(state: Node, max_depth: int = 1000):
             expanded = new_states(node)
             [graph_dfs.add_node(x, x.dist + 1) for x in expanded]
             [stack.insert(0, x) for x in expanded if x not in graph_dfs.visited]
+        #print(node.dist)
         depth += 1
 
     return None, None
@@ -169,6 +172,7 @@ def print_solution(path: list):
 if __name__ == "__main__":
     puzzle = Game([Tube([1]), Tube([1, 1, 1])])
     puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
+    puzzle = Game([Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])])
     init_state = Node(puzzle)
 
     #print("--- BFS ---")
