@@ -49,6 +49,16 @@ class Tube:
     def clone(self):
         return copy.deepcopy(self)
 
+################### added to work with UI #####################
+    def put_ball_r(self, ball):
+        if self.is_full():
+            return False
+        self.balls.append(ball)
+        return True
+
+    def is_completed(self):
+        return self.all_same_colored() and self.is_full()
+
 
 class Game:
     def __init__(self, tubes: list) -> None:
@@ -117,3 +127,14 @@ class Game:
 
     def clone(self):
         return copy.deepcopy(self)
+
+
+
+
+################### added to work with UI #####################
+    def move_ball_r(self, from_i: int, to_i: int):
+        if self.tubes[from_i].is_empty() or self.tubes[to_i].is_full() or (not self.tubes[to_i].is_empty() and (self.tubes[from_i].get_ball() != self.tubes[to_i].get_ball())):
+            return False
+        else:
+             return self.tubes[to_i].put_ball_r(self.tubes[from_i].remove_ball())
+            

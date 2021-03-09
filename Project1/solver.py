@@ -57,11 +57,8 @@ def bfs(state: Node, max_depth: int = 10000):
             aux = new_states(node)
             for e in aux:
                 expanded_states.append(e)
-<<<<<<< HEAD
-=======
             graph_bfs.visit(node)
         #print(depth)
->>>>>>> 46ee441367d4324572ae0be23d1ca7bb5bb91eae
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
@@ -165,6 +162,45 @@ def greedy(state: Node, a_star: bool = False, max_depth: int = 5000):
         depth += 1
 
 
+
+# doesnt print anything (used for interface)
+def greedy_np(state: Node, a_star: bool = False, max_depth: int = 5000):
+    graph = Graph()
+    state.setDist(0)
+    stack = [state]
+    graph.new_depth()
+    graph.add_node(state, 1)
+
+    depth = 1
+    while depth != max_depth and len(stack) != 0:
+        if a_star:
+            stack.sort()
+        else:
+            stack.sort(key = lambda x: x.cost)
+        graph.new_depth()
+        node = stack.pop(0)
+        if node.gamestate.finished():
+            return graph, node
+        else:
+            graph.visit(node)
+            expanded = new_states(node, a_star)
+            [graph.add_node(x, depth + 1) for x in expanded]
+            for children in expanded:
+                if children in graph.visited:
+                    continue
+                if children in stack:
+                    if (children.cost + node.dist + 1 < children.cost + children.dist) and a_star:
+                        children.setParent(node)
+                        children.setDist(node.dist + 1)
+                else:
+                    stack.append(children)
+
+        depth += 1
+
+
+
+
+
 # TODO Function to check if a problem is possible to be solved
 def checkSolvability(matrix: list):
     flat_list = [item for sublist in matrix for item in sublist]
@@ -182,13 +218,8 @@ def print_solution(path: list):
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    #puzzle = Game([Tube([1]), Tube([1, 1, 1])])
-    #puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
-=======
     puzzle = Game([Tube([1]), Tube([1, 1, 1])])
     puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
->>>>>>> 46ee441367d4324572ae0be23d1ca7bb5bb91eae
     puzzle = Game([Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])])
     init_state = Node(puzzle)
 
