@@ -5,6 +5,7 @@ import pygame
 import os
 import time
 import copy
+import json
 from pygame.locals import *
 
 
@@ -19,13 +20,6 @@ from pygame.locals import *
 
 mouse_timeout=0.25
 
-########################### Level Variables ##############################
-level_1=[Tube([1]), Tube([1, 1, 1])]
-level_2=[Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()]
-level_3=[Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])]
-level_4=[Tube([1,2,3,4]),Tube([1,5,6,7]),Tube([8,5,3,9]),Tube([6,2,3,9]),Tube([2,9,8,9]),Tube([8,8,7,3]),Tube([6,5,2,4]), Tube([4,4,7,7]), Tube([1,1,6,5]), Tube([]), Tube([])]
-level_7=[Tube([1,2,3]),Tube([4,2,5,6]),Tube([7,8,5,6]),Tube([7,7,7]),Tube([3,3,9,5]),Tube([4,1,5,8]),Tube([9,3]), Tube([6,2,1,8]), Tube([6,1,8,2]), Tube([9,9]), Tube([4,4])]
-
 
 ########################## Screen Dimensions #############################
 screen_width = 1400
@@ -34,18 +28,16 @@ screen_height = 1000
 
 
 ############################ Dictionaries ################################
+with open('levels.json') as f:
+  	levels = json.load(f)
 
+for level in levels:
+	tubes = levels[level]['tubes']
+	new_tubes = []
+	for tube in tubes:
+		new_tubes.append(Tube(tube))
+	levels[level] = new_tubes
 
-level_dict = {
-	1:level_1,
-	2:level_2,
-	3:level_3,
-	4:level_4,
-	5:level_3,
-	6:level_3,
-	7:level_7,
-	8:level_3
-}
 
 ball_dict = {
 	1:"blueBall.png",
@@ -325,7 +317,7 @@ class UI:
 	def loadLevel(self,num):
 		if hasattr(self,'curGame'):
 			del self.curGame
-		level=copy.deepcopy(level_dict.get(num))
+		level=copy.deepcopy(levels[str(num)])
 		self.curGame = Game(level)
 		self.createGame()
 

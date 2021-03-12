@@ -44,10 +44,7 @@ class Node:
                 continue
 
             balls = balls[idx:]
-            balls.reverse()
-            
-            for i, ball in enumerate(balls):
-                cost += i + 1
+            cost += len(balls) * 2
 
         return cost
                 
