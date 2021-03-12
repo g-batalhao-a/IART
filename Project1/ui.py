@@ -1,13 +1,13 @@
-
-from solver import *
-from tube import *
-import pygame
 import os
 import time
 import copy
 import json
 from pygame.locals import *
 
+import pygame
+
+from solver import *
+from tube import *
 
 #level box size: width-200 height-100
 
