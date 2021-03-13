@@ -1,13 +1,13 @@
-
-from solver import *
-from tube import *
-import pygame
 import os
 import time
 import copy
 import json
 from pygame.locals import *
 
+import pygame
+
+from solver import *
+from tube import *
 
 #level box size: width-200 height-100
 
@@ -18,7 +18,7 @@ from pygame.locals import *
 ########################### Global Variables #############################
 ##########################################################################
 
-mouse_timeout=0.25
+mouse_timeout=0.15
 
 
 ########################## Screen Dimensions #############################
@@ -63,6 +63,42 @@ def loadSprite(file):
 		sprite.rect=img.get_rect()
 		return sprite
 
+def textToSprite(text,img,color,pos,font):
+
+	
+	textSurf = font.render(text, 1, color)
+	
+	background = pygame.Surface((img.get_width(), img.get_height()))
+	
+	background.blit(img,[0,0])
+
+	width = textSurf.get_width()
+	height = textSurf.get_height()
+
+	background.blit(textSurf, [img.get_width()/2 - width/2, img.get_height()/2 - height/2])
+
+	sprite = pygame.sprite.Sprite()
+	sprite.image=background
+	sprite.rect=background.get_rect()
+	sprite.rect.left, sprite.rect.top = pos
+
+
+	return sprite
+
+
+
+def onlyTextSprite(text,color,pos,font):
+	textSurf = font.render(text, 1, color)
+	sprite = pygame.sprite.Sprite()
+
+	background = pygame.Surface((textSurf.get_width()*1.1, textSurf.get_height()*1.1),pygame.SRCALPHA)
+
+	background.blit(textSurf, [textSurf.get_width()*0.05, textSurf.get_height()*0.05])
+	sprite.image=background
+	sprite.rect=background.get_rect()
+	sprite.rect.left, sprite.rect.top = pos
+
+	return sprite
 
 
 ##########################################################################
@@ -106,9 +142,10 @@ class Score:
 
 	def loadNumbers(self):
 		self.numbers=[]
+		font = pygame.font.SysFont("Arial", 50)
 		for i in range(0,10):
-			num=loadSprite("img/numbers/{0}.png".format(i))
-			num.rect.left, num.rect.top=self.coords
+			num=onlyTextSprite(str(i),(0,0,0),self.coords,font)
+			
 			number=pygame.sprite.GroupSingle(num)
 			self.numbers.append(number)
 
@@ -132,39 +169,61 @@ class Score:
 ############################# Menu Class #################################
 ##########################################################################
 
+        
 
 class Menu:
 	def __init__(self):
 		self.getLevels()
+		self.getNextPrev()
 		self.getQuit()
-		self.buildMenu()
+		
+		
 
-
-
-	def buildMenu(self):	
+	def getLevels(self):
+		self.levels=[]
+		self.currPage=0
+		self.totalPages=0
+		levelsPage=pygame.sprite.Group()
+		img = pygame.image.load("img/holders/level.png")
+		font = pygame.font.SysFont("Arial", 70)
+		
 		x=200
-		y=200
-		rows = len(self.levels)//3 + 1
+		y=150
+		rows = 3
 		x_inc = (screen_width-x)//3
 		y_inc = (screen_height-y)//rows
-		i=0
-		for k in self.levels:
-			k.rect.left=x
-			k.rect.top=y
-			if i%3==2:
+		
+		for i in range(1,len(levels)+1):
+			if i%9==1 and i>1:
+				copy=levelsPage.copy()
+				self.levels.append(copy)
+				pygame.sprite.Group.empty(levelsPage)
+				self.totalPages+=1
+				x=200
+				y=150
+			
+			sprite = textToSprite(str(i),img,(230,230,230),[x,y],font)
+			levelsPage.add(sprite)
+
+			if i%3==0 and i>0:
 				x=200
 				y+=y_inc
 			else:
 				x+=x_inc
-			i+=1
 
-	def getLevels(self):
-		self.levels=pygame.sprite.Group()
-		levelDir=os.listdir("img/level")
-		numLevels=len(levelDir)
-		for i in range(1,numLevels+1):
-			level = loadSprite("img/level/" + str(i) +".png")
-			self.levels.add(level)
+		if len(levels)%9!=0:
+			self.levels.append(levelsPage)
+			
+
+	def getNextPrev(self):
+		img = pygame.image.load("img/holders/prevNext.png")
+		font = pygame.font.SysFont("Arial", 35)
+		nextSprite = textToSprite("Next",img,(230,230,230),[1200,900],font)
+		prevSprite = textToSprite("Prev",img,(230,230,230),[1050,900],font)
+		self.next=pygame.sprite.GroupSingle(nextSprite)
+		self.prev=pygame.sprite.GroupSingle(prevSprite)
+		
+
 
 	def getQuit(self):
 		quit = loadSprite("img/buttons/quit.png")
@@ -174,12 +233,25 @@ class Menu:
 
 	def draw(self,screen):
 		self.quit.draw(screen)
-		self.levels.draw(screen)
+		self.levels[self.currPage].draw(screen)
+		if self.currPage>0:
+			self.prev.draw(screen)
+		if self.currPage<self.totalPages:
+			self.next.draw(screen)
+
 
 	def checkMenuCols(self):
 		mouse_pos=pygame.mouse.get_pos()
 		i=0
-		for k in self.levels:
+		if self.currPage>0:
+			if self.prev.sprite.rect.collidepoint(mouse_pos):
+				self.currPage-=1
+				return -1
+		if self.currPage<self.totalPages:
+			if self.next.sprite.rect.collidepoint(mouse_pos):
+				self.currPage+=1
+				return -1
+		for k in self.levels[self.currPage]:
 			i+=1
 			if k.rect.collidepoint(mouse_pos):
 				return i
@@ -188,6 +260,115 @@ class Menu:
 		return -1
 
 
+
+
+##########################################################################
+########################## End Screen Class ##############################
+##########################################################################
+
+
+class EndScreen:
+	def __init__(self):
+		self.coords=[800,450]
+		self.loadNumbers()
+		self.loadLevelPassed()
+		self.loadHolders()
+		self.loadText()
+		self.loadBackToMenu()
+
+
+	def loadNumbers(self):
+		self.numbers=[]
+		font = pygame.font.SysFont("Arial", 70)
+		for i in range(0,10):
+			num=onlyTextSprite(str(i),(0,0,0),self.coords,font)
+			
+			number=pygame.sprite.GroupSingle(num)
+			self.numbers.append(number)
+
+
+	def loadLevelPassed(self):
+		sprite = loadSprite("img/levelPassed.png")
+		sprite.rect.left,sprite.rect.top=[350,200]
+		self.passed=pygame.sprite.GroupSingle(sprite)
+
+	def loadHolders(self):
+		sprite = loadSprite("img/holders/endScoreHolder.png")
+		sprite.rect.left,sprite.rect.top=[self.coords[0]-10,self.coords[1]]
+		self.scoreHolder=pygame.sprite.GroupSingle(sprite)
+		copy =  loadSprite("img/holders/endScoreHolder.png")
+		copy.rect.left,copy.rect.top=[self.coords[0]-10,self.coords[1]+190]
+		self.undoHolder=pygame.sprite.GroupSingle(copy)
+
+
+	def loadText(self):
+		font = pygame.font.SysFont("Arial", 50)
+		img = pygame.image.load("img/holders/TextHolder.png")
+		move=textToSprite("Move Count: ",img,(230,230,230),[350,self.coords[1]-10],font)
+		undo=textToSprite("Undo Count: ",img,(230,230,230),[350,self.coords[1]+180],font)
+		self.moveText=pygame.sprite.Group(move)
+		self.undoText=pygame.sprite.Group(undo)
+
+	def loadBackToMenu(self):
+		back = loadSprite("img/buttons/backToMenu.png")
+		back.rect.left, back.rect.top=[500,800]
+		self.backToMenu=pygame.sprite.GroupSingle(back)
+
+
+	def draw(self, screen, score, undo):
+		self.passed.draw(screen)
+		self.drawBackToMenu(screen)
+		self.drawHolders(screen)
+		self.drawScore(screen,score)
+		self.drawUndo(screen,undo)
+		
+	def drawHolders(self,screen):
+		self.scoreHolder.draw(screen)
+		self.undoHolder.draw(screen)
+		self.moveText.draw(screen)
+		self.undoText.draw(screen)
+
+
+	def drawScore(self,screen,score):
+		num1=score//100
+		num2=score%100//10
+		num3=score%10
+
+		self.numbers[num1].sprite.rect.top=self.coords[1]-5
+		self.numbers[num1].sprite.rect.left=self.coords[0]
+		self.numbers[num1].draw(screen)
+
+		self.numbers[num2].sprite.rect.top=self.coords[1]-5
+		self.numbers[num2].sprite.rect.left=self.coords[0]+70
+		self.numbers[num2].draw(screen)
+
+		self.numbers[num3].sprite.rect.top=self.coords[1]-5
+		self.numbers[num3].sprite.rect.left=self.coords[0]+140
+		self.numbers[num3].draw(screen)
+	
+	def drawUndo(self,screen,undo):
+		num1=undo//100
+		num2=undo%100//10
+		num3=undo%10
+
+		self.numbers[num1].sprite.rect.top=self.coords[1]+185
+		self.numbers[num1].sprite.rect.left=self.coords[0]
+		self.numbers[num1].draw(screen)
+
+		self.numbers[num2].sprite.rect.top=self.coords[1]+185
+		self.numbers[num2].sprite.rect.left=self.coords[0]+70
+		self.numbers[num2].draw(screen)
+
+		self.numbers[num3].sprite.rect.top=self.coords[1]+185
+		self.numbers[num3].sprite.rect.left=self.coords[0]+140
+		self.numbers[num3].draw(screen)
+
+
+	def drawBackToMenu(self,screen):
+		self.backToMenu.draw(screen)
+	
+	def checkBackCol(self,mouse_pos):
+		return self.backToMenu.sprite.rect.collidepoint(mouse_pos)
 
 
 ##########################################################################
@@ -295,6 +476,7 @@ class UI:
 		self.init_screen()
 		self.loadOther()
 		self.buildMenu()
+		self.buildEndScreen()
 		self.timer=Timer(mouse_timeout)
 		self.active=True
 
@@ -306,6 +488,9 @@ class UI:
 
 	def buildMenu(self):
 		self.menu=Menu()
+
+	def buildEndScreen(self):
+		self.endScreen=EndScreen()
 
 
 
@@ -377,6 +562,9 @@ class UI:
 		self.hintNo=pygame.sprite.GroupSingle(hintNo)
 
 
+	
+
+
 
 		
 
@@ -428,6 +616,10 @@ class UI:
 		self.drawMoveCount()
 		self.drawUndoCount()
 		self.drawHint()
+
+	
+	def drawEnd(self):
+		self.endScreen.draw(self.screen,self.moveNum.score,self.undoNum.score)
 	
 	
 		
@@ -462,13 +654,18 @@ class UI:
 		if select > -1:
 			self.makeMove(select)
 			if self.checkCompleted():
-				self.returnToMenu() ############################change to endgame when done
+				self.endGame()
 		elif self.checkUndo(mouse_pos):
 			self.undo()
 		elif self.checkQuit(mouse_pos):
 			self.returnToMenu()
 		elif self.checkHint(mouse_pos):
 			self.displayHint=True
+	
+	def checkBackToMenu(self,mouse_pos):
+
+		if self.endScreen.checkBackCol(mouse_pos):
+			self.returnToMenu()
 
 
 
@@ -524,7 +721,11 @@ class UI:
 			
 
 	def runEnd(self):
-		x=0
+		self.drawEnd()
+		mouse=pygame.mouse.get_pressed()[0]
+		if self.checkMouseTimeout(mouse):
+			mouse_pos=pygame.mouse.get_pos()
+			self.checkBackToMenu(mouse_pos)
 
 
 
@@ -553,8 +754,8 @@ class UI:
 		self.updateHint()
 		
 		self.savedMoves=[]
-		self.moveNum=Score([1250,50])
-		self.undoNum=Score([1250,120])
+		self.moveNum=Score([1256,45])
+		self.undoNum=Score([1256,115])
 
 	def returnToMenu(self):
 		self.state="MENU"
@@ -572,21 +773,10 @@ class UI:
 		if tube == self.selected:
 			self.deselect()
 		elif self.selected >= 0:
-			print("tried move: from {0} to {1}".format(self.selected,tube))
 			if self.curGame.move_ball_r(self.selected,tube):
 				self.succellfulMove(tube)
 		else:
 			self.select(tube)
-
-
-	def deselect(self):
-		self.tubes[self.selected].select()
-		self.selected=-1
-
-
-	def select(self,tube):
-		self.tubes[tube].select()
-		self.selected=tube
 
 	def succellfulMove(self,tube):
 		self.moveNum.increaseScore()
@@ -596,7 +786,6 @@ class UI:
 		self.updateHint()
 		self.deselect()	
 
-
 	def undo(self):
 		if(self.savedMoves):
 			self.undoNum.increaseScore()
@@ -604,8 +793,6 @@ class UI:
 			lastMove=self.savedMoves.pop()
 			self.undoMove(lastMove)
 			
-
-
 	def undoMove(self,move):
 		self.curGame.move_ball(move[1],move[0])
 
@@ -613,8 +800,17 @@ class UI:
 		self.tubes[move[0]].add_ball(ball)
 		self.updateHint()
 
+	################### Select/Deselect flasks #####################
+	def deselect(self):
+		self.tubes[self.selected].select()
+		self.selected=-1
 
+	def select(self,tube):
+		self.tubes[tube].select()
+		self.selected=tube
 
+	
+	###################### Hint functions ########################
 	def updateHint(self):
 		self.displayHint=False
 		init_state = Node(self.curGame)
@@ -629,7 +825,6 @@ class UI:
 			hint=self.findDiferences(path[1])
 			self.updateHintArrows(hint)
 
-	
 	def updateHintArrows(self,hint):
 		self.hintUp.sprite.rect.left=self.tubes[hint[0]].coords[0]+5
 		self.hintUp.sprite.rect.top=self.tubes[hint[0]].coords[1]-130
