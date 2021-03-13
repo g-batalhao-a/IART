@@ -242,7 +242,7 @@ class Menu:
 
 	def checkMenuCols(self):
 		mouse_pos=pygame.mouse.get_pos()
-		i=0
+		
 		if self.currPage>0:
 			if self.prev.sprite.rect.collidepoint(mouse_pos):
 				self.currPage-=1
@@ -251,10 +251,11 @@ class Menu:
 			if self.next.sprite.rect.collidepoint(mouse_pos):
 				self.currPage+=1
 				return -1
+		i=0
 		for k in self.levels[self.currPage]:
 			i+=1
 			if k.rect.collidepoint(mouse_pos):
-				return i
+				return 9*self.currPage+i
 		if(self.quit.sprite.rect.collidepoint(mouse_pos)):
 			return 0
 		return -1
@@ -560,14 +561,6 @@ class UI:
 		hintNo=loadSprite("img/buttons/no-hint.png")
 		hintNo.rect.left,hintNo.rect.top=[1250,280]	
 		self.hintNo=pygame.sprite.GroupSingle(hintNo)
-
-
-	
-
-
-
-		
-
 
 
 		
