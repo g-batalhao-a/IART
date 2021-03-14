@@ -6,6 +6,7 @@ from pygame.locals import *
 
 import pygame
 
+
 from solver import *
 from tube import *
 
@@ -55,7 +56,7 @@ ball_dict = {
 }
 
 
-######################## Load Sprite function ###########################
+######################## Load Sprite functions ###########################
 def loadSprite(file):
 		img = pygame.image.load(file)
 		sprite = pygame.sprite.Sprite()
@@ -165,6 +166,67 @@ class Score:
 
 
 
+
+##########################################################################
+############################# Music Class #################################
+##########################################################################
+
+        
+
+class MusicPlayer:
+	def __init__(self):
+		self.loadBgMusic()
+		self.loadGameSounds()
+
+
+	def loadBgMusic(self):
+		pygame.mixer.init()
+		pygame.mixer.music.load("assets/sound/bgMusic.mp3")
+		pygame.mixer.music.set_volume(0.3)
+		pygame.mixer.music.play(-1,0,10)
+
+	def loadGameSounds(self):
+		self.completedTube=pygame.mixer.Sound("assets/sound/completedTubeSound.wav")
+		self.selectLevel=pygame.mixer.Sound("assets/sound/selectLevelSound.mp3")
+		self.hint=pygame.mixer.Sound("assets/sound/hintSound.mp3")
+		self.button=pygame.mixer.Sound("assets/sound/buttonSound.mp3")
+		self.selectLevel.set_volume(0.05)
+		self.completedTube.set_volume(0.1)
+		self.hint.set_volume(0.1)
+		self.button.set_volume(0.1)
+
+
+	def inMenu(self):
+		pygame.mixer.music.set_volume(0.3)
+		pygame.mixer.music.rewind()
+
+
+	def enterLevel(self):
+		pygame.mixer.music.set_volume(0.1)
+		pygame.mixer.music.rewind()
+		self.selectLevel.play()
+
+
+	def clickHint(self):
+		self.hint.play()
+
+	def completeTube(self):
+		self.completedTube.play()
+
+	def clickedButton(self):
+		self.button.play()
+
+
+
+
+
+
+
+
+
+
+
+
 ##########################################################################
 ############################# Menu Class #################################
 ##########################################################################
@@ -173,9 +235,71 @@ class Score:
 
 class Menu:
 	def __init__(self):
+		self.getButtons()
+		self.getTitle()
+		self.getQuit()
+		
+		
+	def getTitle(self):
+		sprite = loadSprite("assets/img/BallSort.png")
+		sprite.rect.left,sprite.rect.top=[380,50]
+		self.title=pygame.sprite.GroupSingle(sprite)	
+
+	def getButtons(self):
+		img = pygame.image.load("assets/img/holders/MainMenuHolder.png")
+		font = pygame.font.SysFont("Arial", 70)
+		play = textToSprite("Play",img,(230,230,230),[500,300],font)
+		watch = textToSprite("Watch",img,(120,120,120),[500,500],font)
+		settings = textToSprite("Settings",img,(120,120,120),[500,700],font)
+
+		self.play=pygame.sprite.GroupSingle(play)
+		self.watch=pygame.sprite.GroupSingle(watch)
+		self.settings=pygame.sprite.GroupSingle(settings)
+		
+
+
+	def getQuit(self):
+		quit = loadSprite("assets/img/buttons/quit.png")
+		quit.rect.left=20
+		quit.rect.top=20
+		self.quit=pygame.sprite.GroupSingle(quit)
+
+	def draw(self,screen):
+		self.title.draw(screen)
+		self.quit.draw(screen)
+		self.play.draw(screen)
+		self.watch.draw(screen)
+		self.settings.draw(screen)
+
+
+	def checkMenuCols(self):
+		mouse_pos=pygame.mouse.get_pos()
+		
+		
+		if self.play.sprite.rect.collidepoint(mouse_pos):
+			return 1
+		
+		if self.watch.sprite.rect.collidepoint(mouse_pos):
+			return 2
+
+		if self.settings.sprite.rect.collidepoint(mouse_pos):
+			return 3
+
+		if(self.quit.sprite.rect.collidepoint(mouse_pos)):
+			return 0
+		return -1
+
+##########################################################################
+############################# Game Menu Class #################################
+##########################################################################
+
+        
+
+class GameMenu:
+	def __init__(self):
 		self.getLevels()
 		self.getNextPrev()
-		self.getQuit()
+		self.getBack()
 		
 		
 
@@ -184,7 +308,7 @@ class Menu:
 		self.currPage=0
 		self.totalPages=0
 		levelsPage=pygame.sprite.Group()
-		img = pygame.image.load("img/holders/level.png")
+		img = pygame.image.load("assets/img/holders/level.png")
 		font = pygame.font.SysFont("Arial", 70)
 		
 		x=200
@@ -216,7 +340,7 @@ class Menu:
 			
 
 	def getNextPrev(self):
-		img = pygame.image.load("img/holders/prevNext.png")
+		img = pygame.image.load("assets/img/holders/prevNext.png")
 		font = pygame.font.SysFont("Arial", 35)
 		nextSprite = textToSprite("Next",img,(230,230,230),[1200,900],font)
 		prevSprite = textToSprite("Prev",img,(230,230,230),[1050,900],font)
@@ -225,14 +349,14 @@ class Menu:
 		
 
 
-	def getQuit(self):
-		quit = loadSprite("img/buttons/quit.png")
-		quit.rect.left=20
-		quit.rect.top=20
-		self.quit=pygame.sprite.GroupSingle(quit)
+	def getBack(self):
+		back = loadSprite("assets/img/buttons/back.png")
+		back.rect.left=20
+		back.rect.top=20
+		self.back=pygame.sprite.GroupSingle(back)
 
 	def draw(self,screen):
-		self.quit.draw(screen)
+		self.back.draw(screen)
 		self.levels[self.currPage].draw(screen)
 		if self.currPage>0:
 			self.prev.draw(screen)
@@ -246,17 +370,17 @@ class Menu:
 		if self.currPage>0:
 			if self.prev.sprite.rect.collidepoint(mouse_pos):
 				self.currPage-=1
-				return -1
+				return -2
 		if self.currPage<self.totalPages:
 			if self.next.sprite.rect.collidepoint(mouse_pos):
 				self.currPage+=1
-				return -1
+				return -2
 		i=0
 		for k in self.levels[self.currPage]:
 			i+=1
 			if k.rect.collidepoint(mouse_pos):
 				return 9*self.currPage+i
-		if(self.quit.sprite.rect.collidepoint(mouse_pos)):
+		if(self.back.sprite.rect.collidepoint(mouse_pos)):
 			return 0
 		return -1
 
@@ -289,29 +413,29 @@ class EndScreen:
 
 
 	def loadLevelPassed(self):
-		sprite = loadSprite("img/levelPassed.png")
+		sprite = loadSprite("assets/img/levelPassed.png")
 		sprite.rect.left,sprite.rect.top=[350,200]
 		self.passed=pygame.sprite.GroupSingle(sprite)
 
 	def loadHolders(self):
-		sprite = loadSprite("img/holders/endScoreHolder.png")
+		sprite = loadSprite("assets/img/holders/endScoreHolder.png")
 		sprite.rect.left,sprite.rect.top=[self.coords[0]-10,self.coords[1]]
 		self.scoreHolder=pygame.sprite.GroupSingle(sprite)
-		copy =  loadSprite("img/holders/endScoreHolder.png")
+		copy =  loadSprite("assets/img/holders/endScoreHolder.png")
 		copy.rect.left,copy.rect.top=[self.coords[0]-10,self.coords[1]+190]
 		self.undoHolder=pygame.sprite.GroupSingle(copy)
 
 
 	def loadText(self):
 		font = pygame.font.SysFont("Arial", 50)
-		img = pygame.image.load("img/holders/TextHolder.png")
+		img = pygame.image.load("assets/img/holders/TextHolder.png")
 		move=textToSprite("Move Count: ",img,(230,230,230),[350,self.coords[1]-10],font)
 		undo=textToSprite("Undo Count: ",img,(230,230,230),[350,self.coords[1]+180],font)
 		self.moveText=pygame.sprite.Group(move)
 		self.undoText=pygame.sprite.Group(undo)
 
 	def loadBackToMenu(self):
-		back = loadSprite("img/buttons/backToMenu.png")
+		back = loadSprite("assets/img/buttons/backToMenu.png")
 		back.rect.left, back.rect.top=[500,800]
 		self.backToMenu=pygame.sprite.GroupSingle(back)
 
@@ -395,19 +519,19 @@ class Flask:
 		
 ############################ Load functions #################################
 	def loadDefaultFlask(self):
-		flask = loadSprite("img/flasks/flask-white.png")
+		flask = loadSprite("assets/img/flasks/flask-white.png")
 		flask.rect.left=self.coords[0]
 		flask.rect.top=self.coords[1]
 		self.flask = pygame.sprite.GroupSingle(flask)
 
 	def loadSelectedFlask(self):	
-		selected = loadSprite("img/flasks/flask-4-selected.png")
+		selected = loadSprite("assets/img/flasks/flask-4-selected.png")
 		selected.rect.left=self.coords[0]
 		selected.rect.top=self.coords[1]
 		self.flask_sel = pygame.sprite.GroupSingle(selected)
 
 	def loadCompletedFlask(self):
-		completed = loadSprite("img/flasks/flask-4-completed.png")
+		completed = loadSprite("assets/img/flasks/flask-4-completed.png")
 		completed.rect.left=self.coords[0]
 		completed.rect.top=self.coords[1]
 		self.flask_comp = pygame.sprite.GroupSingle(completed)
@@ -422,7 +546,7 @@ class Flask:
 
 	def loadBall(self,num,coords):
 		ballFile=ball_dict.get(num)
-		ball = loadSprite("img/balls/" +ballFile)
+		ball = loadSprite("assets/img/balls/" +ballFile)
 		ball.rect.left=coords[0]
 		ball.rect.top=coords[1]
 		self.balls.add(ball)
@@ -454,9 +578,19 @@ class Flask:
 		self.balls.add(ball)
 		if self.tube.is_completed():
 			self.completed=True
+			return 1
+		return 0
 
 	def select(self):
 		self.selected = not self.selected
+		if len(self.balls)>0:
+			if self.selected:
+				ball=self.balls.sprites()[-1]
+				ball.rect.top=self.coords[1]-100
+			if not self.selected:
+				ball=self.balls.sprites()[-1]
+				ball.rect.top=self.coords[1]+290-73*len(self.balls)
+	
 		
 	def checkMouseCol(self,mouse_pos):
 		return self.flask.sprite.rect.collidepoint(mouse_pos)
@@ -473,10 +607,12 @@ class Flask:
 
 class UI:
 	def __init__(self):
-		self.state="MENU"
+		self.state="MAINMENU"
 		self.init_screen()
 		self.loadOther()
 		self.buildMenu()
+		self.buildMainMenu()
+		self.buildMusicPlayer()
 		self.buildEndScreen()
 		self.timer=Timer(mouse_timeout)
 		self.active=True
@@ -488,7 +624,13 @@ class UI:
 
 
 	def buildMenu(self):
-		self.menu=Menu()
+		self.menu=GameMenu()
+
+	def buildMusicPlayer(self):
+		self.dj=MusicPlayer()
+
+	def buildMainMenu(self):
+		self.mainMenu=Menu()
 
 	def buildEndScreen(self):
 		self.endScreen=EndScreen()
@@ -498,7 +640,7 @@ class UI:
 
 ############################ Load functions #################################
 	def loadBG(self):
-		self.bg = pygame.image.load('img/lab.jpg')
+		self.bg = pygame.image.load('assets/img/lab.jpg')
 
 	def loadLevel(self,num):
 		if hasattr(self,'curGame'):
@@ -519,46 +661,50 @@ class UI:
 		self.loadHint()
 
 
+		
+		
+
+
 	def loadUndo(self):
-		undoImg=loadSprite("img/buttons/undo.png")
+		undoImg=loadSprite("assets/img/buttons/undo.png")
 		undoImg.rect.left=1250
 		undoImg.rect.top=200
 		self.undoB=pygame.sprite.GroupSingle(undoImg)
 
 	def loadQuit(self):
-		quitImg=loadSprite("img/buttons/menu.png")
+		quitImg=loadSprite("assets/img/buttons/menu.png")
 		quitImg.rect.left=20
 		quitImg.rect.top=20
 		self.quit=pygame.sprite.GroupSingle(quitImg)
 
 	def loadMoveCount(self):
-		moveHolder=loadSprite("img/holders/numberBox.png")
+		moveHolder=loadSprite("assets/img/holders/numberBox.png")
 		moveHolder.rect.left,moveHolder.rect.top=[1250,50]
 		self.moveHolder=pygame.sprite.GroupSingle(moveHolder)
-		moveCount=loadSprite("img/holders/moveCount.png")
+		moveCount=loadSprite("assets/img/holders/moveCount.png")
 		moveCount.rect.left,moveCount.rect.top=[1000,45]	
 		self.moveCount=pygame.sprite.GroupSingle(moveCount)
 		
 
 	def loadUndoCount(self):
-		undoHolder=loadSprite("img/holders/numberBox.png")
+		undoHolder=loadSprite("assets/img/holders/numberBox.png")
 		undoHolder.rect.left,undoHolder.rect.top=[1250,120]	
 		self.undoHolder=pygame.sprite.GroupSingle(undoHolder)
-		undoCount=loadSprite("img/holders/undoCount.png")
+		undoCount=loadSprite("assets/img/holders/undoCount.png")
 		undoCount.rect.left,undoCount.rect.top=[1000,115]	
 		self.undoCount=pygame.sprite.GroupSingle(undoCount)
 
 	def loadHint(self):
-		hintUp=loadSprite("img/arrow_up.png")
+		hintUp=loadSprite("assets/img/arrow_up.png")
 		self.hintUp=pygame.sprite.GroupSingle(hintUp)
-		hintDown=loadSprite("img/arrow_down.png")
+		hintDown=loadSprite("assets/img/arrow_down.png")
 		self.hintDown=pygame.sprite.GroupSingle(hintDown)
 
-		hintB=loadSprite("img/buttons/hint.png")
+		hintB=loadSprite("assets/img/buttons/hint.png")
 		hintB.rect.left,hintB.rect.top=[1250,280]	
 		self.hintB=pygame.sprite.GroupSingle(hintB)
 
-		hintNo=loadSprite("img/buttons/no-hint.png")
+		hintNo=loadSprite("assets/img/buttons/no-hint.png")
 		hintNo.rect.left,hintNo.rect.top=[1250,280]	
 		self.hintNo=pygame.sprite.GroupSingle(hintNo)
 
@@ -570,7 +716,12 @@ class UI:
 	def drawScreen(self):
 		self.screen.blit(self.bg, (0, 0))
 
-	def drawMenu(self):
+	
+	
+	def drawMainMenu(self):
+		self.mainMenu.draw(self.screen)
+	
+	def drawGameMenu(self):
 		self.menu.draw(self.screen)
 		
 	def drawQuit(self):
@@ -603,12 +754,13 @@ class UI:
 		self.undoNum.draw(self.screen)
 
 	def drawRun(self):
+		self.drawHint()
 		self.drawFlasks()
 		self.drawQuit()
 		self.drawUndo()
 		self.drawMoveCount()
 		self.drawUndoCount()
-		self.drawHint()
+		
 
 	
 	def drawEnd(self):
@@ -654,6 +806,7 @@ class UI:
 			self.returnToMenu()
 		elif self.checkHint(mouse_pos):
 			self.displayHint=True
+			self.dj.clickHint()
 	
 	def checkBackToMenu(self,mouse_pos):
 
@@ -687,22 +840,40 @@ class UI:
 
 	def run(self):
 		self.drawScreen()
-		if self.state=="MENU":
-			self.runMenu()
+		if self.state=="MAINMENU":
+			self.runMainMenu()
+		elif self.state=="GAMEMENU":
+			self.runGameMenu()
 		elif self.state=="RUNNING":
 			self.runLevel()
 		elif self.state=="END":
 			self.runEnd()
 
-	def runMenu(self):
-		self.drawMenu()
+
+	def runMainMenu(self):
+		self.drawMainMenu()
+		mouse=pygame.mouse.get_pressed()[0]
+		if self.checkMouseTimeout(mouse):
+			select=self.mainMenu.checkMenuCols()
+			if select == 0:
+				self.active=False
+			elif select ==1:
+				self.levelSelection()
+
+
+
+
+	def runGameMenu(self):
+		self.drawGameMenu()
 		mouse=pygame.mouse.get_pressed()[0]
 		if self.checkMouseTimeout(mouse):
 			select=self.menu.checkMenuCols()
 			if select == 0:
-				self.active=False
+				self.returnToMainMenu()
 			elif select > 0:
 				self.startGame(select)
+			elif select==-2:
+				self.dj.clickedButton()
 
 	def runLevel(self):
 		self.drawRun()
@@ -740,6 +911,7 @@ class UI:
 			x+=112
 			
 	def startGame(self,level):
+		self.dj.enterLevel()
 		self.loadLevel(level)
 		self.state="RUNNING"
 		self.moves=0
@@ -750,10 +922,18 @@ class UI:
 		self.moveNum=Score([1256,45])
 		self.undoNum=Score([1256,115])
 
-	def returnToMenu(self):
-		self.state="MENU"
-		self.selected=-1
+	
+	def returnToMainMenu(self):
+		self.state="MAINMENU"
 
+
+	def levelSelection(self):
+		self.state="GAMEMENU"
+	
+	def returnToMenu(self):
+		self.dj.inMenu()
+		self.state="GAMEMENU"
+		self.selected=-1
 
 	def endGame(self):
 		self.state="END"
@@ -774,7 +954,8 @@ class UI:
 	def succellfulMove(self,tube):
 		self.moveNum.increaseScore()
 		ball=self.tubes[self.selected].remove_ball()
-		self.tubes[tube].add_ball(ball)
+		if self.tubes[tube].add_ball(ball):
+			self.dj.completeTube()
 		self.savedMoves.append([self.selected, tube])
 		self.updateHint()
 		self.deselect()	
