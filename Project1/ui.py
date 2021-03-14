@@ -177,6 +177,8 @@ class MusicPlayer:
 	def __init__(self):
 		self.loadBgMusic()
 		self.loadGameSounds()
+		self.SFX= True
+		self.music= True
 
 
 	def loadBgMusic(self):
@@ -195,27 +197,37 @@ class MusicPlayer:
 		self.hint.set_volume(0.1)
 		self.button.set_volume(0.1)
 
-
 	def inMenu(self):
 		pygame.mixer.music.set_volume(0.3)
 		pygame.mixer.music.rewind()
 
-
 	def enterLevel(self):
 		pygame.mixer.music.set_volume(0.1)
 		pygame.mixer.music.rewind()
-		self.selectLevel.play()
-
+		if self.SFX:
+			self.selectLevel.play()
 
 	def clickHint(self):
-		self.hint.play()
+		if self.SFX:
+			self.hint.play()
 
 	def completeTube(self):
-		self.completedTube.play()
+		if self.SFX:
+			self.completedTube.play()
 
 	def clickedButton(self):
-		self.button.play()
+		if self.SFX:
+			self.button.play()
 
+	def switchMusic(self):
+		self.music=not self.music
+		if self.music:
+			pygame.mixer.music.unpause()
+		else:
+			pygame.mixer.music.pause()
+
+	def switchSFX(self):
+		self.SFX=not self.SFX
 
 
 
@@ -241,7 +253,7 @@ class Menu:
 		
 		
 	def getTitle(self):
-		sprite = loadSprite("assets/img/BallSort.png")
+		sprite = loadSprite("assets/img/titles/BallSort.png")
 		sprite.rect.left,sprite.rect.top=[380,50]
 		self.title=pygame.sprite.GroupSingle(sprite)	
 
@@ -250,7 +262,7 @@ class Menu:
 		font = pygame.font.SysFont("Arial", 70)
 		play = textToSprite("Play",img,(230,230,230),[500,300],font)
 		watch = textToSprite("Watch",img,(120,120,120),[500,500],font)
-		settings = textToSprite("Settings",img,(120,120,120),[500,700],font)
+		settings = textToSprite("Settings",img,(230,230,230),[500,700],font)
 
 		self.play=pygame.sprite.GroupSingle(play)
 		self.watch=pygame.sprite.GroupSingle(watch)
@@ -288,6 +300,97 @@ class Menu:
 		if(self.quit.sprite.rect.collidepoint(mouse_pos)):
 			return 0
 		return -1
+
+
+##########################################################################
+########################## SettingsMenu Class ############################
+##########################################################################
+
+        
+
+class SettingsMenu:
+	def __init__(self):
+		self.getButtons()
+		self.getTitle()
+		self.getBack()
+		
+		
+	def getTitle(self):
+		sprite = loadSprite("assets/img/titles/Settings.png")
+		sprite.rect.left,sprite.rect.top=[380,50]
+		self.title=pygame.sprite.GroupSingle(sprite)	
+
+	def getButtons(self):
+		self.sfxActive = True
+		self.musicActive = True
+
+		img = pygame.image.load("assets/img/holders/SettingsHolders.png")
+		offBg = pygame.image.load("assets/img/holders/offBg.png")
+		onBg = pygame.image.load("assets/img/holders/onBg.png")
+		font = pygame.font.SysFont("Arial", 60)
+		font2 = pygame.font.SysFont("Arial", 50)
+		off1 = textToSprite("Off",offBg,(0,0,0),[810,410],font2)
+		off2 = textToSprite("Off",offBg,(0,0,0),[810,610],font2)
+		on1 = textToSprite("On",onBg,(230,230,230),[810,410],font2)
+		on2 = textToSprite("On",onBg,(230,230,230),[810,610],font2)
+		music = textToSprite("Music",img,(230,230,230),[390,400],font)
+		sfx = textToSprite("SFX",img,(230,230,230),[390,600],font)
+
+		
+		self.music = pygame.sprite.GroupSingle(music)
+		self.sfx = pygame.sprite.GroupSingle(sfx)
+		self.musicOff = pygame.sprite.GroupSingle(off1)
+		self.musicOn = pygame.sprite.GroupSingle(on1)
+		self.sfxOff = pygame.sprite.GroupSingle(off2)
+		self.sfxOn = pygame.sprite.GroupSingle(on2)
+		
+
+
+	def getBack(self):
+		back = loadSprite("assets/img/buttons/back.png")
+		back.rect.left=20
+		back.rect.top=20
+		self.back=pygame.sprite.GroupSingle(back)
+
+	def draw(self,screen):
+		self.title.draw(screen)
+		self.back.draw(screen)
+		self.music.draw(screen)
+		self.sfx.draw(screen)
+		if self.sfxActive:
+			self.sfxOn.draw(screen)
+		else:
+			self.sfxOff.draw(screen)
+
+		if self.musicActive:
+			self.musicOn.draw(screen)
+		else:
+			self.musicOff.draw(screen)
+	
+
+
+	def checkMenuCols(self):
+		mouse_pos=pygame.mouse.get_pos()
+		
+		
+		if self.sfxOn.sprite.rect.collidepoint(mouse_pos):
+			self.sfxActive= not self.sfxActive
+			return 1
+		
+		if self.musicOn.sprite.rect.collidepoint(mouse_pos):
+			self.musicActive= not self.musicActive
+			return 2
+
+		if(self.back.sprite.rect.collidepoint(mouse_pos)):
+			return 0
+		return -1
+
+
+
+
+
+
+
 
 ##########################################################################
 ############################# Game Menu Class #################################
@@ -413,7 +516,7 @@ class EndScreen:
 
 
 	def loadLevelPassed(self):
-		sprite = loadSprite("assets/img/levelPassed.png")
+		sprite = loadSprite("assets/img/titles/levelPassed.png")
 		sprite.rect.left,sprite.rect.top=[350,200]
 		self.passed=pygame.sprite.GroupSingle(sprite)
 
@@ -612,6 +715,7 @@ class UI:
 		self.loadOther()
 		self.buildMenu()
 		self.buildMainMenu()
+		self.buildSettingMenu()
 		self.buildMusicPlayer()
 		self.buildEndScreen()
 		self.timer=Timer(mouse_timeout)
@@ -631,6 +735,9 @@ class UI:
 
 	def buildMainMenu(self):
 		self.mainMenu=Menu()
+
+	def buildSettingMenu(self):
+		self.settings=SettingsMenu()
 
 	def buildEndScreen(self):
 		self.endScreen=EndScreen()
@@ -723,6 +830,9 @@ class UI:
 	
 	def drawGameMenu(self):
 		self.menu.draw(self.screen)
+
+	def drawSettingsMenu(self):
+		self.settings.draw(self.screen)
 		
 	def drawQuit(self):
 		self.quit.draw(self.screen)
@@ -842,6 +952,8 @@ class UI:
 		self.drawScreen()
 		if self.state=="MAINMENU":
 			self.runMainMenu()
+		elif self.state=="SETTINGS":
+			self.runSettingsMenu()
 		elif self.state=="GAMEMENU":
 			self.runGameMenu()
 		elif self.state=="RUNNING":
@@ -859,6 +971,8 @@ class UI:
 				self.active=False
 			elif select ==1:
 				self.levelSelection()
+			elif select ==3:
+				self.settingsMenu()
 
 
 
@@ -874,6 +988,20 @@ class UI:
 				self.startGame(select)
 			elif select==-2:
 				self.dj.clickedButton()
+
+
+	def runSettingsMenu(self):
+		self.drawSettingsMenu()
+		mouse=pygame.mouse.get_pressed()[0]
+		if self.checkMouseTimeout(mouse):
+			select=self.settings.checkMenuCols()
+			if select == 0:
+				self.returnToMainMenu()
+			elif select ==1:
+				self.dj.switchSFX()
+			elif select==2:
+				self.dj.switchMusic()
+	
 
 	def runLevel(self):
 		self.drawRun()
@@ -934,6 +1062,9 @@ class UI:
 		self.dj.inMenu()
 		self.state="GAMEMENU"
 		self.selected=-1
+
+	def settingsMenu(self):
+		self.state="SETTINGS"
 
 	def endGame(self):
 		self.state="END"
