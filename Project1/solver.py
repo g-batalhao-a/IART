@@ -1,4 +1,9 @@
+from xlwt import Workbook
+
 from graph import *
+import xlwt
+import time
+import random
 
 
 def new_states(state: Node, a_star: bool = False):
@@ -8,7 +13,7 @@ def new_states(state: Node, a_star: bool = False):
     for move in moves:
         new_gamestate = state.gamestate.clone()
         from_i, to_i = move
-        new_gamestate.move_ball(from_i, to_i) 
+        new_gamestate.move_ball(from_i, to_i)
         node = Node(new_gamestate, 0, state.dist + 1)
         if a_star:
             node.setCost(node.better_nWrong_heuristics())
@@ -42,7 +47,8 @@ def manhattan(matrix: list):
 
     return distance
 
-def bfs(state: Node, max_depth: int = 10000):
+
+def bfs(state: Node, max_depth: int = 500):
     states = [state]
 
     graph_bfs = Graph()
@@ -58,14 +64,14 @@ def bfs(state: Node, max_depth: int = 10000):
             for e in aux:
                 expanded_states.append(e)
             graph_bfs.visit(node)
-        #print(depth)
+        # print(depth)
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
     return None, None
 
 
-def bfs_optimized(state: Node, max_depth: int = 10000):
+def bfs_optimized(state: Node, max_depth: int = 500):
     states = [state]
 
     graph_bfs = Graph()
@@ -83,14 +89,14 @@ def bfs_optimized(state: Node, max_depth: int = 10000):
             for e in aux:
                 expanded_states.append(e)
             graph_bfs.visit(node)
-        #print(depth)
+
         states = expanded_states
         graph_bfs.new_depth()
         [graph_bfs.add_node(x, depth + 1) for x in states]
     return None, None
 
 
-def dfs(state: Node, max_depth: int = 1000):
+def dfs(state: Node, max_depth: int = 500):
     graph_dfs = Graph()
     stack = [state]
 
@@ -109,24 +115,23 @@ def dfs(state: Node, max_depth: int = 1000):
             expanded = new_states(node)
             [graph_dfs.add_node(x, x.dist + 1) for x in expanded]
             [stack.insert(0, x) for x in expanded if x not in graph_dfs.visited]
-        #print(node.dist)
+
         depth += 1
 
     return None, None
 
 
-def ids(state: Node, max_depth: int = 1000):
+def ids(state: Node, max_depth: int = 500):
     for depth in range(1, max_depth):
         graph_ids, node = dfs(state, depth)
         if (graph_ids, node) != (None, None):
             return graph_ids, node
-        print(depth)
 
     return state, None
 
 
 # TODO
-def greedy(state: Node, a_star: bool = False, max_depth: int = 5000):
+def greedy(state: Node, a_star: bool = False, max_depth: int = 500):
     graph = Graph()
     state.setDist(0)
     stack = [state]
@@ -138,7 +143,7 @@ def greedy(state: Node, a_star: bool = False, max_depth: int = 5000):
         if a_star:
             stack.sort()
         else:
-            stack.sort(key = lambda x: x.cost)
+            stack.sort(key=lambda x: x.cost)
         graph.new_depth()
         node = stack.pop(0)
         if node.gamestate.finished():
@@ -157,14 +162,11 @@ def greedy(state: Node, a_star: bool = False, max_depth: int = 5000):
                         children.setDist(node.dist + 1)
                 else:
                     stack.append(children)
-
-        print(depth)
         depth += 1
 
 
-
 # doesnt print anything (used for interface)
-def greedy_np(state: Node, a_star: bool = False, max_depth: int = 5000):
+def greedy_np(state: Node, a_star: bool = False, max_depth: int = 1000):
     graph = Graph()
     state.setDist(0)
     stack = [state]
@@ -176,7 +178,7 @@ def greedy_np(state: Node, a_star: bool = False, max_depth: int = 5000):
         if a_star:
             stack.sort()
         else:
-            stack.sort(key = lambda x: x.cost)
+            stack.sort(key=lambda x: x.cost)
         graph.new_depth()
         node = stack.pop(0)
         if node.gamestate.finished():
@@ -198,9 +200,6 @@ def greedy_np(state: Node, a_star: bool = False, max_depth: int = 5000):
         depth += 1
 
 
-
-
-
 # TODO Function to check if a problem is possible to be solved
 def checkSolvability(matrix: list):
     flat_list = [item for sublist in matrix for item in sublist]
@@ -217,32 +216,128 @@ def print_solution(path: list):
     [x.print() for x in path]
 
 
+def generate_puzzle(colors: int):
+    balls_list = []
+    for i in range(1, colors + 1):
+        color = [i] * 4
+        balls_list += color
+    random.shuffle(balls_list)
+
+    tubes_list = []
+    pos = 0
+    for i in range(colors):
+        tubes_list.append(Tube(balls_list[pos:pos + 4]))
+        pos += 4
+    tubes_list.append(Tube())
+    tubes_list.append(Tube())
+
+    return Game(tubes_list)
+
+
 if __name__ == "__main__":
-    puzzle = Game([Tube([1]), Tube([1, 1, 1])])
-    puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
-    puzzle = Game([Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])])
-    init_state = Node(puzzle)
+    # puzzle = Game([Tube([1]), Tube([1, 1, 1])])
+    # puzzle = Game([Tube([1, 2, 1, 2]), Tube([2, 1, 2, 1]), Tube()])
+    # puzzle = Game([Tube([1,2,3,1]),Tube([4,5,6,7]),Tube([6,1,7,2]),Tube([4,1,2,4]),Tube([6,5,3,4]),Tube([7,6,3,5]),Tube([5,3,7,2]), Tube(), Tube([])])
+    # init_state = Node(puzzle)
+    wb = Workbook()
+    sheet_A = wb.add_sheet('A_star sheet',True)
+    sheet_greedy = wb.add_sheet('Greedy sheet',True)
+    sheet_ids = wb.add_sheet('IDS sheet',True)
+    sheet_dfs = wb.add_sheet('DFS sheet',True)
+    sheet_bfs_opt = wb.add_sheet('BFS OPT sheet',True)
+    sheet_bfs = wb.add_sheet('BFS sheet',True)
+    size = 2
+    pos = 0
+    result=1
+    while (size < 4):
+        print(size)
+        for i in range(20):
+            init_state = Node(generate_puzzle(size))
+            # print("--- A-Star ---")
+            try:
+                start = time.process_time()
+                graph, goal = greedy(init_state, True)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_A.write(0, pos, size)
+                sheet_A.write(result, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                continue
+                # print("No solution found!")
 
-    # print("--- BFS ---")
-    # graph, goal = bfs(init_state)
+            # print("--- Greedy ---")
+            # graph, goal = greedy(init_state, False)
 
-    # print("--- BFS-OPT ---")
-    # graph, goal = bfs_optimized(init_state)
+            try:
+                start = time.process_time()
+                graph, goal = greedy(init_state, False)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_greedy.write(0, pos, size)
+                sheet_greedy.write(result, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                print("No solution found!")
 
-    # print("--- DFS ---")
-    # graph, goal = dfs(init_state)
+            # print("--- IDS ---")
+            # graph, goal = ids(init_state)
 
-    # print("--- IDS ---")
-    # graph, goal = ids(init_state)
+            try:
+                start = time.process_time()
+                graph, goal = ids(init_state)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_ids.write(0, pos, size)
+                sheet_ids.write(result, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                print("No solution found!")
 
-    # print("--- Greedy ---")
-    # graph, goal = greedy(init_state, False)
+            # print("--- DFS ---")
+            # graph, goal = dfs(init_state)
 
-    print("--- A-Star ---")
-    graph, goal = greedy(init_state, True)
+            try:
+                start = time.process_time()
+                graph, goal = dfs(init_state)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_dfs.write(0, pos, size)
+                sheet_dfs.write(result, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                print("No solution found!")
 
-    try:
-        path = graph.path(goal)
-        print_solution(path)
-    except:
-        print("No solution found!")
+            # print("--- BFS-OPT ---")
+            # graph, goal = bfs_optimized(init_state)
+
+            try:
+                start = time.process_time()
+                graph, goal = bfs_optimized(init_state)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_bfs_opt.write(0, pos, size)
+                sheet_bfs_opt.write(i + 1, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                print("No solution found!")
+
+            # print("--- BFS ---")
+            # graph, goal = bfs(init_state)
+
+            try:
+                start = time.process_time()
+                graph, goal = bfs(init_state)
+                end = (time.process_time() - start)
+                path = graph.path(goal)
+                sheet_bfs.write(0, pos, size)
+                sheet_bfs.write(i + 1, pos, str(len(path))+"-"+str(end)+"s")
+                # print_solution(path)
+            except:
+                print("No solution found!")
+
+
+            result+=1
+        pos += 1
+        size += 1
+        wb.save('Results.xls')
