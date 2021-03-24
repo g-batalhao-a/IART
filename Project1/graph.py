@@ -36,16 +36,21 @@ class Node:
 
     def better_nWrong_heuristics(self):
         cost = 0
-
+        dic = dict()
         for tube in self.gamestate.tubes:
             balls = tube.balls.copy()
+            if(len(balls)==0): continue
             idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
             if idx == -1:
+                dic.setdefault(balls[0],[]).append(len(balls))
                 continue
 
+            dic.setdefault(balls[0],[]).append(idx)
             balls = balls[idx:]
-            cost += len(balls) * 2
-
+            cost += len(balls)
+        #for key in dic:
+            #if len(dic[key])>1:
+                #cost+=4-max(dic[key])
         return cost
                 
 

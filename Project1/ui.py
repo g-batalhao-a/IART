@@ -1,8 +1,4 @@
-import os
-import time
-import copy
 import json
-from pygame.locals import *
 
 import pygame
 
@@ -674,7 +670,7 @@ class Flask:
 		pygame.sprite.Group.remove(self.balls,ball)
 		self.completed=False
 		return ball
-
+	
 	def add_ball(self, ball):
 		ball.rect.left=self.coords[0]+12
 		ball.rect.top=self.coords[1]+290-73*(len(self.balls)+1)

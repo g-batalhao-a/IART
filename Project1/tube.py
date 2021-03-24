@@ -106,10 +106,12 @@ class Game:
         return indexes
 
     def move_ball(self, from_i: int, to_i: int):
-        self.tubes[to_i].put_ball(self.tubes[from_i].remove_ball())
+        (self.tubes[to_i]).put_ball(self.tubes[from_i].remove_ball())
 
     def get_tubes(self):
         return self.tubes
+
+
 
     def __eq__(self, other):
         for tube in self.tubes:
