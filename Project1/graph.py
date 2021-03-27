@@ -31,10 +31,13 @@ class Node:
     def setParent(self, node):
         self.parent = node
 
+    def getTotalCost(self):
+        return self.dist + self.cost
+
     def clone(self):
         return copy.deepcopy(self)
 
-    def better_nWrong_heuristics(self):
+    def number_of_wrong_heuristics(self):
         cost = 0
         dic = dict()
         for tube in self.gamestate.tubes:
@@ -65,6 +68,9 @@ class Graph:
         self.depth.append([])
 
     def add_node(self, node: Node, level):
+        while len(self.depth) < level:
+            self.new_depth()
+
         self.depth[level - 1].append(node)
 
     def visit(self, node: Node):
