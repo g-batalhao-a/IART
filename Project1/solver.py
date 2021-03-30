@@ -93,13 +93,13 @@ def solver(start_node: Node, algorithm: Algorithm, max_depth: int = 5000):
         graph.visit(node)
         graph.add_node(node, node.dist + 1)
 
-        if node.gamestate.finished():
+        if algorithm != Algorithm.IDS and node.gamestate.finished():
             print("Found goal!")
             return graph, node
 
         expanded = expand_node(node, graph.visited, algorithm)
 
-        if (node.dist < max_depth):
+        if (node.dist < max_depth - 1):
             stack = add_states_to_stack(stack, expanded, algorithm, node)
         else:
             solution = check_final_depth_solution(expanded)
