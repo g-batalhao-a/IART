@@ -119,39 +119,6 @@ def ids(start_node: Node, max_depth: int = 5000):
     return graph, None
 
 
-# doesnt print anything (used for interface)
-def greedy_np(state: Node, a_star: bool = False, max_depth: int = 1000):
-    graph = Graph()
-    state.setDist(0)
-    stack = [state]
-    graph.new_depth()
-    graph.add_node(state, 1)
-
-    depth = 1
-    while depth != max_depth and len(stack) != 0:
-        if a_star:
-            stack.sort()
-        else:
-            stack.sort(key=lambda x: x.cost)
-        graph.new_depth()
-        node = stack.pop(0)
-        if node.gamestate.finished():
-            return graph, node
-        else:
-            graph.visit(node)
-            expanded = new_states(node, a_star)
-            [graph.add_node(x, depth + 1) for x in expanded]
-            for children in expanded:
-                if children in graph.visited:
-                    continue
-                if children in stack:
-                    if (children.cost + node.dist + 1 < children.cost + children.dist) and a_star:
-                        children.setParent(node)
-                        children.setDist(node.dist + 1)
-                else:
-                    stack.append(children)
-
-        depth += 1
 
 
 def print_solution(path: list):
