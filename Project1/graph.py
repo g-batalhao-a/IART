@@ -39,21 +39,39 @@ class Node:
 
     def number_of_wrong_heuristics(self):
         cost = 0
-        dic = dict()
+        
         for tube in self.gamestate.tubes:
             balls = tube.balls.copy()
-            if(len(balls)==0): continue
-            idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
-            if idx == -1:
-                dic.setdefault(balls[0],[]).append(len(balls))
-                continue
 
-            dic.setdefault(balls[0],[]).append(idx)
+            if(len(balls)==0): continue
+            
+            idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
+            if idx == -1: continue
+
             balls = balls[idx:]
             cost += len(balls)
-        #for key in dic:
-            #if len(dic[key])>1:
-                #cost+=4-max(dic[key])
+
+        return cost
+
+    def number_of_consecutive_heuristics(self):
+        cost = 0
+        dic = dict()
+
+        for tube in self.gamestate.tubes:
+            balls = tube.balls
+            if (len(balls) == 0): continue
+
+            for i in range(0, len(balls)):
+                idx = next((x for x, v in enumerate(balls, start = i) if v != balls[i]), -1)
+                if idx == -1:
+                    dic.setdefault(balls[0],[]).append(len(balls) - i)
+                    break
+                else:
+                    dic.setdefault(balls[0],[]).append(idx - i)
+
+        for key in dic:
+            cost += 4 - max(dic[key])
+
         return cost
                 
 

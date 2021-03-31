@@ -5,6 +5,7 @@ import time
 import random
 from enum import Enum
 
+
 class Algorithm(Enum):
     BFS = 1
     DFS = 2
@@ -43,24 +44,24 @@ def get_stack_item(stack, item):
 
 
 def add_states_to_stack(stack, new_states, algorithm: Algorithm, node: Node):
-    if (algorithm == Algorithm.BFS):
+    if algorithm == Algorithm.BFS:
         stack = stack + new_states
-    elif (algorithm == Algorithm.DFS or algorithm == Algorithm.IDS):
+    elif algorithm == Algorithm.DFS or algorithm == Algorithm.IDS:
         stack = new_states + stack
-    elif (algorithm == Algorithm.GREEDY):
+    elif algorithm == Algorithm.GREEDY:
         stack = stack + new_states
-        stack.sort(key = lambda x: x.cost)
-    elif (algorithm == Algorithm.A_STAR):
+        stack.sort(key=lambda x: x.cost)
+    elif algorithm == Algorithm.A_STAR:
         for children in new_states:
             stack_node = get_stack_item(stack, children)
             if stack_node is not None:
-                if (children.getTotalCost() < stack_node.getTotalCost()):
+                if children.getTotalCost() < stack_node.getTotalCost():
                     stack_node.setParent(node)
                     stack_node.setDist(node.dist + 1)
             else:
                 stack.append(children)
 
-        stack.sort(key = lambda x: x.getTotalCost())
+        stack.sort(key=lambda x: x.getTotalCost())
 
     return stack
 
@@ -80,7 +81,7 @@ def solver(start_node: Node, algorithm: Algorithm, max_depth: int = 5000):
 
     graph.new_depth()
     graph.add_node(start_node, 1)
-    
+
     graph.new_depth()
 
     while len(stack) != 0:
@@ -93,13 +94,13 @@ def solver(start_node: Node, algorithm: Algorithm, max_depth: int = 5000):
         graph.visit(node)
         graph.add_node(node, node.dist + 1)
 
-        if node.gamestate.finished():
+        if algorithm != Algorithm.IDS and node.gamestate.finished():
             print("Found goal!")
             return graph, node
 
         expanded = expand_node(node, graph.visited, algorithm)
 
-        if (node.dist < max_depth):
+        if node.dist < max_depth - 1:
             stack = add_states_to_stack(stack, expanded, algorithm, node)
         else:
             solution = check_final_depth_solution(expanded)
@@ -186,6 +187,7 @@ if __name__ == "__main__":
     for level in levels:
         game = Game(levels[level])
         init_state = Node(game)
+        """
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.A_STAR, 30)
@@ -202,6 +204,7 @@ if __name__ == "__main__":
         except:
             print("No solution found! - Greedy")
 
+        """
         try:
             start = time.perf_counter()
             graph, goal = ids(init_state, 60)
@@ -209,7 +212,7 @@ if __name__ == "__main__":
             write_to_sheet(sheet_ids, result, pos, end, game.num_of_colors, graph, graph.path(goal))
         except:
             print("No solution found! - IDS")
-
+        """
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.DFS, 60)
@@ -220,11 +223,12 @@ if __name__ == "__main__":
 
         try:
             start = time.perf_counter()
-            graph, goal = solver(init_state, Algorithm.BFS, 13)
+            graph, goal = solver(init_state, Algorithm.BFS, 15)
             end = (time.perf_counter() - start)
             write_to_sheet(sheet_bfs, result, pos, end, game.num_of_colors, graph, graph.path(goal))
         except:
             print("No solution found! - BFS")
+        """
 
         result += 1
         wb.save('Results.xls')
