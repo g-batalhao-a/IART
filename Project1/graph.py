@@ -32,7 +32,7 @@ class Node:
         self.parent = node
 
     def getTotalCost(self):
-        return self.dist + self.cost
+        return self.cost - self.dist
 
     def clone(self):
         return copy.deepcopy(self)
@@ -73,7 +73,28 @@ class Node:
             cost += 4 - max(dic[key])
 
         return cost
-                
+
+    def node_score_heuristic(self):
+        score = 0
+
+        for tube in self.gamestate.tubes:
+            balls = tube.balls.copy()
+
+            if len(balls) == 0: 
+                score += 10
+            else:
+                c1 = balls.pop(0)
+                cnt = 1
+                while len(balls) != 0:
+                    c2 = balls.pop(0)
+                    if c1 == c2:
+                        cnt += 1
+                    else:
+                        c1 = c2
+                        cnt = 1
+                score += (5 * cnt)
+
+        return score
 
 
 class Graph:
