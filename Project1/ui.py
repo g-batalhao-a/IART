@@ -173,6 +173,7 @@ class Flask:
 class UI:
 	def __init__(self):
 		self.state="MAINMENU"
+		self.algorithm = 0
 		self.init_screen()
 		self.loadOther()
 		self.buildMenu()
@@ -463,6 +464,8 @@ class UI:
 				self.dj.switchSFX()
 			elif select==2:
 				self.dj.switchMusic()
+			elif select>2:
+				self.algorithm=select-3
 	
 
 	def runLevel(self):
@@ -567,6 +570,19 @@ class UI:
 		self.tubes[move[0]].add_ball(ball)
 		self.updateHint()
 
+
+	def getResult(self, init_state):
+		if(self.algorithm==0):
+			return solver(init_state, Algorithm.A_STAR, 30)
+		elif (self.algorithm==1):
+			return solver(init_state, Algorithm.GREEDY, 30)
+		elif (self.algorithm==2):
+			return solver(init_state, Algorithm.DFS, 60)
+		elif (self.algorithm==3):
+			return solver(init_state, Algorithm.BFS, 15)
+		elif (self.algorithm==4):
+			return solver(init_state, Algorithm.IDS, 60)
+
 	################### Select/Deselect flasks #####################
 	def deselect(self):
 		self.tubes[self.selected].select()
@@ -581,7 +597,8 @@ class UI:
 	def updateHint(self):
 		self.displayHint=False
 		init_state = Node(self.curGame)
-		result = solver(init_state, Algorithm.A_STAR, 60)
+		result = self.getResult(init_state)
+		
 		if result is None:
 			self.hintAvailable=False
 			self.hideHintArrows()
@@ -623,7 +640,6 @@ class UI:
 			if(tube_from!=-1 and tube_to!=-1):
 				return [tube_from,tube_to]
 		return [tube_from,tube_to]
-
 
 
 

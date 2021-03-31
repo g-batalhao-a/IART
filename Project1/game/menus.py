@@ -95,26 +95,53 @@ class SettingsMenu:
 	def getButtons(self):
 		self.sfxActive = True
 		self.musicActive = True
+		self.currHint = 0
+
 
 		img = pygame.image.load("assets/img/holders/SettingsHolders.png")
+		hintImg = pygame.image.load("assets/img/holders/level.png")
 		offBg = pygame.image.load("assets/img/holders/offBg.png")
 		onBg = pygame.image.load("assets/img/holders/onBg.png")
 		font = pygame.font.SysFont("Arial", 60)
 		font2 = pygame.font.SysFont("Arial", 50)
 		off1 = textToSprite("Off",offBg,(0,0,0),[810,410],font2)
-		off2 = textToSprite("Off",offBg,(0,0,0),[810,610],font2)
+		off2 = textToSprite("Off",offBg,(0,0,0),[810,560],font2)
 		on1 = textToSprite("On",onBg,(230,230,230),[810,410],font2)
-		on2 = textToSprite("On",onBg,(230,230,230),[810,610],font2)
-		music = textToSprite("Music",img,(230,230,230),[390,400],font)
-		sfx = textToSprite("SFX",img,(230,230,230),[390,600],font)
+		on2 = textToSprite("On",onBg,(230,230,230),[810,560],font2)
 
+		music = textToSprite("Music",img,(230,230,230),[390,400],font)
+		sfx = textToSprite("SFX",img,(230,230,230),[390,550],font)
 		
+		
+		hint = textToSprite("Hint",img,(230,230,230),[390,700],font)
+		greedy = textToSprite("greedy",hintImg,(230,230,230),[800,700],font2)
+		astar = textToSprite("A*",hintImg,(230,230,230),[800,700],font2)
+		bfs = textToSprite("BFS",hintImg,(230,230,230),[800,700],font2)
+		dfs = textToSprite("DFS",hintImg,(230,230,230),[800,700],font2)
+		ids = textToSprite("IDS",hintImg,(230,230,230),[800,700],font2)
+	
+
+
+
+	
 		self.music = pygame.sprite.GroupSingle(music)
 		self.sfx = pygame.sprite.GroupSingle(sfx)
 		self.musicOff = pygame.sprite.GroupSingle(off1)
 		self.musicOn = pygame.sprite.GroupSingle(on1)
 		self.sfxOff = pygame.sprite.GroupSingle(off2)
 		self.sfxOn = pygame.sprite.GroupSingle(on2)
+
+
+
+
+		self.hint = pygame.sprite.GroupSingle(hint)
+		self.algorithms = []
+		self.algorithms.append(pygame.sprite.GroupSingle(greedy))
+		self.algorithms.append(pygame.sprite.GroupSingle(astar))
+		self.algorithms.append(pygame.sprite.GroupSingle(bfs))
+		self.algorithms.append(pygame.sprite.GroupSingle(dfs))
+		self.algorithms.append(pygame.sprite.GroupSingle(ids))
+		
 		
 
 
@@ -138,7 +165,12 @@ class SettingsMenu:
 			self.musicOn.draw(screen)
 		else:
 			self.musicOff.draw(screen)
-	
+		self.drawHint(screen)
+
+
+	def drawHint(self,screen):
+		self.hint.draw(screen)
+		self.algorithms[self.currHint].draw(screen)
 
 
 	def checkMenuCols(self):
@@ -155,6 +187,12 @@ class SettingsMenu:
 
 		if(self.back.sprite.rect.collidepoint(mouse_pos)):
 			return 0
+
+		if(self.algorithms[self.currHint].sprite.rect.collidepoint(mouse_pos)):
+			self.currHint+=1
+			if(self.currHint>=5):
+				self.currHint=0
+			return self.currHint + 3
 		return -1
 
 
@@ -257,4 +295,8 @@ class GameMenu:
 				return 9*self.currPage+i
 		if(self.back.sprite.rect.collidepoint(mouse_pos)):
 			return 0
+
+		
+		
+
 		return -1

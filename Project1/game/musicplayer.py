@@ -21,7 +21,7 @@ class MusicPlayer:
 		pygame.mixer.music.play(-1,0,10)
 
 	def loadGameSounds(self):
-		self.completedTube=pygame.mixer.Sound("assets/sound/completedTubeSound.wav")
+		self.completedTube=pygame.mixer.Sound("assets/sound/completedTubeSound.mp3")
 		self.selectLevel=pygame.mixer.Sound("assets/sound/selectLevelSound.mp3")
 		self.hint=pygame.mixer.Sound("assets/sound/hintSound.mp3")
 		self.button=pygame.mixer.Sound("assets/sound/buttonSound.mp3")
