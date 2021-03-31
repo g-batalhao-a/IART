@@ -25,7 +25,7 @@ def expand_node(node: Node, visited, algorithm: Algorithm):
         new_node = Node(new_gamestate, 0, node.dist + 1)
 
         if algorithm == Algorithm.GREEDY or algorithm == Algorithm.A_STAR:
-            new_node.setCost(new_node.number_of_wrong_heuristics())
+            new_node.setCost(new_node.node_score_heuristic())
 
         expansion.append(new_node)
 
@@ -50,7 +50,8 @@ def add_states_to_stack(stack, new_states, algorithm: Algorithm, node: Node):
         stack = new_states + stack
     elif algorithm == Algorithm.GREEDY:
         stack = stack + new_states
-        stack.sort(key=lambda x: x.cost)
+        stack = sorted(stack, key=lambda x: x.cost, reverse=True)
+        #stack.sort(key=lambda x: x.cost)
     elif algorithm == Algorithm.A_STAR:
         for children in new_states:
             stack_node = get_stack_item(stack, children)
@@ -61,7 +62,8 @@ def add_states_to_stack(stack, new_states, algorithm: Algorithm, node: Node):
             else:
                 stack.append(children)
 
-        stack.sort(key=lambda x: x.getTotalCost())
+        stack = sorted(stack, key=lambda x: x.getTotalCost(), reverse=True)
+        #stack.sort(key=lambda x: x.getTotalCost())
 
     return stack
 
@@ -187,7 +189,6 @@ if __name__ == "__main__":
     for level in levels:
         game = Game(levels[level])
         init_state = Node(game)
-        """
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.A_STAR, 30)
@@ -204,7 +205,6 @@ if __name__ == "__main__":
         except:
             print("No solution found! - Greedy")
 
-        """
         try:
             start = time.perf_counter()
             graph, goal = ids(init_state, 60)
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             write_to_sheet(sheet_ids, result, pos, end, game.num_of_colors, graph, graph.path(goal))
         except:
             print("No solution found! - IDS")
-        """
+            
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.DFS, 60)
@@ -228,7 +228,6 @@ if __name__ == "__main__":
             write_to_sheet(sheet_bfs, result, pos, end, game.num_of_colors, graph, graph.path(goal))
         except:
             print("No solution found! - BFS")
-        """
 
         result += 1
         wb.save('Results.xls')
