@@ -25,7 +25,7 @@ def expand_node(node: Node, visited, algorithm: Algorithm):
         new_node = Node(new_gamestate, 0, node.dist + 1)
 
         if algorithm == Algorithm.GREEDY or algorithm == Algorithm.A_STAR:
-            new_node.setCost(new_node.node_score_heuristic())
+            new_node.setCost(new_node.number_of_wrong_heuristics())
 
         expansion.append(new_node)
 
@@ -189,6 +189,7 @@ if __name__ == "__main__":
     for level in levels:
         game = Game(levels[level])
         init_state = Node(game)
+
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.A_STAR, 30)
