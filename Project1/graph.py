@@ -32,19 +32,19 @@ class Node:
         self.parent = node
 
     def getTotalCost(self):
-        return self.cost - self.dist
+        return self.cost + self.dist
 
     def clone(self):
         return copy.deepcopy(self)
 
     def number_of_wrong_heuristics(self):
         cost = 0
-        
+
         for tube in self.gamestate.tubes:
             balls = tube.balls.copy()
 
-            if(len(balls)==0): continue
-            
+            if (len(balls) == 0): continue
+
             idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
             if idx == -1: continue
 
@@ -62,12 +62,12 @@ class Node:
             if (len(balls) == 0): continue
 
             for i in range(0, len(balls)):
-                idx = next((x for x, v in enumerate(balls, start = i) if v != balls[i]), -1)
+                idx = next((x for x, v in enumerate(balls, start=i) if v != balls[i]), -1)
                 if idx == -1:
-                    dic.setdefault(balls[0],[]).append(len(balls) - i)
+                    dic.setdefault(balls[0], []).append(len(balls) - i)
                     break
                 else:
-                    dic.setdefault(balls[0],[]).append(idx - i)
+                    dic.setdefault(balls[0], []).append(idx - i)
 
         for key in dic:
             cost += 4 - max(dic[key])
@@ -80,7 +80,7 @@ class Node:
         for tube in self.gamestate.tubes:
             balls = tube.balls.copy()
 
-            if len(balls) == 0: 
+            if len(balls) == 0:
                 score += 10
             else:
                 c1 = balls.pop(0)

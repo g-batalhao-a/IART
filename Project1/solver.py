@@ -50,8 +50,7 @@ def add_states_to_stack(stack, new_states, algorithm: Algorithm, node: Node):
         stack = new_states + stack
     elif algorithm == Algorithm.GREEDY:
         stack = stack + new_states
-        stack = sorted(stack, key=lambda x: x.cost, reverse=True)
-        #stack.sort(key=lambda x: x.cost)
+        stack.sort(key=lambda x: x.cost)
     elif algorithm == Algorithm.A_STAR:
         for children in new_states:
             stack_node = get_stack_item(stack, children)
@@ -62,8 +61,7 @@ def add_states_to_stack(stack, new_states, algorithm: Algorithm, node: Node):
             else:
                 stack.append(children)
 
-        stack = sorted(stack, key=lambda x: x.getTotalCost(), reverse=True)
-        #stack.sort(key=lambda x: x.getTotalCost())
+        stack.sort(key=lambda x: x.getTotalCost())
 
     return stack
 
@@ -120,8 +118,6 @@ def ids(start_node: Node, max_depth: int = 5000):
             return graph, node
 
     return graph, None
-
-
 
 
 def print_solution(path: list):
@@ -213,7 +209,7 @@ if __name__ == "__main__":
             write_to_sheet(sheet_ids, result, pos, end, game.num_of_colors, graph, graph.path(goal))
         except:
             print("No solution found! - IDS")
-            
+
         try:
             start = time.perf_counter()
             graph, goal = solver(init_state, Algorithm.DFS, 60)
