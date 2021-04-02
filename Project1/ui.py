@@ -630,10 +630,10 @@ class UI:
 			mouse_pos=pygame.mouse.get_pos()
 			if self.autoSolving:
 				self.checkSolveCols(mouse_pos)
-				
 			else:
 				self.checkRunCols(mouse_pos)
-		if self.autoSolving:
+
+		if self.autoSolving and not self.solverFailed:
 			if self.solveTimer.checkTimer() and not self.paused:
 				self.playSolved()
 				
@@ -758,7 +758,7 @@ class UI:
 		self.tubes[move[0]].add_ball(ball)
 		self.updateHint()
 
-	@timeout(4)
+	@timeout(20)
 	def getResult(self, init_state):
 		if(self.algorithm==0):
 			return solver(init_state, Algorithm.A_STAR, 30)
@@ -769,7 +769,7 @@ class UI:
 		elif (self.algorithm==3):
 			return solver(init_state, Algorithm.BFS, 15)
 		elif (self.algorithm==4):
-			return solver(init_state, Algorithm.IDS, 15)
+			return solver(init_state, Algorithm.IDS, 60)
 
 	def startSolved(self):
 		init_state = Node(self.curGame)
