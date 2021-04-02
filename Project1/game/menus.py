@@ -33,7 +33,7 @@ class Menu:
 		img = pygame.image.load("assets/img/holders/MainMenuHolder.png")
 		font = pygame.font.SysFont("Arial", 70)
 		play = textToSprite("Play",img,(230,230,230),[500,300],font)
-		watch = textToSprite("Watch",img,(120,120,120),[500,500],font)
+		watch = textToSprite("Watch",img,(230,230,230),[500,500],font)
 		settings = textToSprite("Settings",img,(230,230,230),[500,700],font)
 
 		self.play=pygame.sprite.GroupSingle(play)
@@ -136,10 +136,10 @@ class SettingsMenu:
 
 		self.hint = pygame.sprite.GroupSingle(hint)
 		self.algorithms = []
-		self.algorithms.append(pygame.sprite.GroupSingle(greedy))
 		self.algorithms.append(pygame.sprite.GroupSingle(astar))
-		self.algorithms.append(pygame.sprite.GroupSingle(bfs))
+		self.algorithms.append(pygame.sprite.GroupSingle(greedy))
 		self.algorithms.append(pygame.sprite.GroupSingle(dfs))
+		self.algorithms.append(pygame.sprite.GroupSingle(bfs))
 		self.algorithms.append(pygame.sprite.GroupSingle(ids))
 		
 		

@@ -66,6 +66,13 @@ class EndScreen:
 		self.drawHolders(screen)
 		self.drawScore(screen,score)
 		self.drawUndo(screen,undo)
+
+	def drawSolved(self, screen, score):
+		self.passed.draw(screen)
+		self.drawBackToMenu(screen)
+		self.scoreHolder.draw(screen)
+		self.moveText.draw(screen)
+		self.drawScore(screen,score)
 		
 	def drawHolders(self,screen):
 		self.scoreHolder.draw(screen)

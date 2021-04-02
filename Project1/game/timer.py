@@ -1,5 +1,6 @@
 import time
-mouse_timeout=0.15
+
+
 
 
 ##########################################################################
@@ -12,6 +13,10 @@ class Timer:
 		self.timer=time.time()
 
 	def startTimer(self):
+		self.timer=time.time()+self.time
+
+	def updateTimer(self,newTime):
+		self.time=newTime
 		self.timer=time.time()+self.time
 
 	def checkTimer(self):
