@@ -24,7 +24,7 @@ class Score:
         self.numbers = []
         font = pygame.font.SysFont("Arial", 50)
         for i in range(0, 10):
-            num = onlyTextSprite(str(i), (0, 0, 0), self.coords, font)
+            num = only_text_sprite(str(i), (0, 0, 0), self.coords, font)
 
             number = pygame.sprite.GroupSingle(num)
             self.numbers.append(number)

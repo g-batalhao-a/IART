@@ -20,34 +20,34 @@ class EndScreen:
         self.numbers = []
         font = pygame.font.SysFont("Arial", 70)
         for i in range(0, 10):
-            num = onlyTextSprite(str(i), (0, 0, 0), self.coords, font)
+            num = only_text_sprite(str(i), (0, 0, 0), self.coords, font)
 
             number = pygame.sprite.GroupSingle(num)
             self.numbers.append(number)
 
     def load_level_passed(self):
-        sprite = loadSprite("assets/img/titles/levelPassed.png")
+        sprite = load_sprite("assets/img/titles/levelPassed.png")
         sprite.rect.left, sprite.rect.top = [350, 200]
         self.passed = pygame.sprite.GroupSingle(sprite)
 
     def load_holders(self):
-        sprite = loadSprite("assets/img/holders/endScoreHolder.png")
+        sprite = load_sprite("assets/img/holders/endScoreHolder.png")
         sprite.rect.left, sprite.rect.top = [self.coords[0] - 10, self.coords[1]]
         self.score_holder = pygame.sprite.GroupSingle(sprite)
-        copy = loadSprite("assets/img/holders/endScoreHolder.png")
+        copy = load_sprite("assets/img/holders/endScoreHolder.png")
         copy.rect.left, copy.rect.top = [self.coords[0] - 10, self.coords[1] + 190]
         self.undo_holder = pygame.sprite.GroupSingle(copy)
 
     def load_text(self):
         font = pygame.font.SysFont("Arial", 50)
         img = pygame.image.load("assets/img/holders/TextHolder.png")
-        move = textToSprite("Move Count: ", img, (230, 230, 230), [350, self.coords[1] - 10], font)
-        undo = textToSprite("Undo Count: ", img, (230, 230, 230), [350, self.coords[1] + 180], font)
+        move = text_to_sprite("Move Count: ", img, (230, 230, 230), [350, self.coords[1] - 10], font)
+        undo = text_to_sprite("Undo Count: ", img, (230, 230, 230), [350, self.coords[1] + 180], font)
         self.move_text = pygame.sprite.Group(move)
         self.undo_text = pygame.sprite.Group(undo)
 
     def load_back_to_menu(self):
-        back = loadSprite("assets/img/buttons/backToMenu.png")
+        back = load_sprite("assets/img/buttons/backToMenu.png")
         back.rect.left, back.rect.top = [500, 800]
         self.back_to_menu = pygame.sprite.GroupSingle(back)
 

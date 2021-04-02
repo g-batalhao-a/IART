@@ -16,23 +16,23 @@ class Menu:
         self.get_quit()
 
     def get_title(self):
-        sprite = loadSprite("assets/img/titles/BallSort.png")
+        sprite = load_sprite("assets/img/titles/BallSort.png")
         sprite.rect.left, sprite.rect.top = [380, 50]
         self.title = pygame.sprite.GroupSingle(sprite)
 
     def get_buttons(self):
         img = pygame.image.load("assets/img/holders/MainMenuHolder.png")
         font = pygame.font.SysFont("Arial", 70)
-        play = textToSprite("Play", img, (230, 230, 230), [500, 300], font)
-        watch = textToSprite("Watch", img, (230, 230, 230), [500, 500], font)
-        settings = textToSprite("Settings", img, (230, 230, 230), [500, 700], font)
+        play = text_to_sprite("Play", img, (230, 230, 230), [500, 300], font)
+        watch = text_to_sprite("Watch", img, (230, 230, 230), [500, 500], font)
+        settings = text_to_sprite("Settings", img, (230, 230, 230), [500, 700], font)
 
         self.play = pygame.sprite.GroupSingle(play)
         self.watch = pygame.sprite.GroupSingle(watch)
         self.settings = pygame.sprite.GroupSingle(settings)
 
     def get_quit(self):
-        quit = loadSprite("assets/img/buttons/quit.png")
+        quit = load_sprite("assets/img/buttons/quit.png")
         quit.rect.left = 20
         quit.rect.top = 20
         self.quit = pygame.sprite.GroupSingle(quit)
@@ -69,7 +69,7 @@ class SettingsMenu:
         self.get_back()
 
     def get_title(self):
-        sprite = loadSprite("assets/img/titles/Settings.png")
+        sprite = load_sprite("assets/img/titles/Settings.png")
         sprite.rect.left, sprite.rect.top = [380, 50]
         self.title = pygame.sprite.GroupSingle(sprite)
 
@@ -84,20 +84,20 @@ class SettingsMenu:
         on_bg = pygame.image.load("assets/img/holders/onBg.png")
         font = pygame.font.SysFont("Arial", 60)
         font2 = pygame.font.SysFont("Arial", 50)
-        off1 = textToSprite("Off", off_bg, (0, 0, 0), [810, 410], font2)
-        off2 = textToSprite("Off", off_bg, (0, 0, 0), [810, 560], font2)
-        on1 = textToSprite("On", on_bg, (230, 230, 230), [810, 410], font2)
-        on2 = textToSprite("On", on_bg, (230, 230, 230), [810, 560], font2)
+        off1 = text_to_sprite("Off", off_bg, (0, 0, 0), [810, 410], font2)
+        off2 = text_to_sprite("Off", off_bg, (0, 0, 0), [810, 560], font2)
+        on1 = text_to_sprite("On", on_bg, (230, 230, 230), [810, 410], font2)
+        on2 = text_to_sprite("On", on_bg, (230, 230, 230), [810, 560], font2)
 
-        music = textToSprite("Music", img, (230, 230, 230), [390, 400], font)
-        sfx = textToSprite("SFX", img, (230, 230, 230), [390, 550], font)
+        music = text_to_sprite("Music", img, (230, 230, 230), [390, 400], font)
+        sfx = text_to_sprite("SFX", img, (230, 230, 230), [390, 550], font)
 
-        hint = textToSprite("Hint", img, (230, 230, 230), [390, 700], font)
-        greedy = textToSprite("greedy", hint_img, (230, 230, 230), [800, 700], font2)
-        astar = textToSprite("A*", hint_img, (230, 230, 230), [800, 700], font2)
-        bfs = textToSprite("BFS", hint_img, (230, 230, 230), [800, 700], font2)
-        dfs = textToSprite("DFS", hint_img, (230, 230, 230), [800, 700], font2)
-        ids = textToSprite("IDS", hint_img, (230, 230, 230), [800, 700], font2)
+        hint = text_to_sprite("Hint", img, (230, 230, 230), [390, 700], font)
+        greedy = text_to_sprite("greedy", hint_img, (230, 230, 230), [800, 700], font2)
+        astar = text_to_sprite("A*", hint_img, (230, 230, 230), [800, 700], font2)
+        bfs = text_to_sprite("BFS", hint_img, (230, 230, 230), [800, 700], font2)
+        dfs = text_to_sprite("DFS", hint_img, (230, 230, 230), [800, 700], font2)
+        ids = text_to_sprite("IDS", hint_img, (230, 230, 230), [800, 700], font2)
 
         self.music = pygame.sprite.GroupSingle(music)
         self.sfx = pygame.sprite.GroupSingle(sfx)
@@ -115,7 +115,7 @@ class SettingsMenu:
         self.algorithms.append(pygame.sprite.GroupSingle(ids))
 
     def get_back(self):
-        back = loadSprite("assets/img/buttons/back.png")
+        back = load_sprite("assets/img/buttons/back.png")
         back.rect.left = 20
         back.rect.top = 20
         self.back = pygame.sprite.GroupSingle(back)
@@ -193,7 +193,7 @@ class GameMenu:
                 x = 200
                 y = 150
 
-            sprite = textToSprite(str(i), img, (230, 230, 230), [x, y], font)
+            sprite = text_to_sprite(str(i), img, (230, 230, 230), [x, y], font)
             levels_page.add(sprite)
 
             if i % 3 == 0 and i > 0:
@@ -208,13 +208,13 @@ class GameMenu:
     def get_next_prev(self):
         img = pygame.image.load("assets/img/holders/prevNext.png")
         font = pygame.font.SysFont("Arial", 35)
-        next_sprite = textToSprite("Next", img, (230, 230, 230), [1200, 900], font)
-        prev_sprite = textToSprite("Prev", img, (230, 230, 230), [1050, 900], font)
+        next_sprite = text_to_sprite("Next", img, (230, 230, 230), [1200, 900], font)
+        prev_sprite = text_to_sprite("Prev", img, (230, 230, 230), [1050, 900], font)
         self.next = pygame.sprite.GroupSingle(next_sprite)
         self.prev = pygame.sprite.GroupSingle(prev_sprite)
 
     def get_back(self):
-        back = loadSprite("assets/img/buttons/back.png")
+        back = load_sprite("assets/img/buttons/back.png")
         back.rect.left = 20
         back.rect.top = 20
         self.back = pygame.sprite.GroupSingle(back)
