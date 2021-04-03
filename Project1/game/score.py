@@ -1,6 +1,6 @@
 import pygame
 
-from game.utils import *
+from game.utils import only_text_sprite
 
 
 # Score Class

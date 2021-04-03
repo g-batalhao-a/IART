@@ -1,12 +1,19 @@
 import functools
-from game.endscreen import *
-from game.menus import *
-from game.musicplayer import *
-from game.score import *
-from game.timer import *
-from game.utils import *
-from solver import *
-from tube import *
+import json
+import pygame
+import time
+import random
+import copy
+
+from game.endscreen import EndScreen
+from game.menus import Menu, SettingsMenu, GameMenu
+from game.musicplayer import MusicPlayer
+from game.score import Score
+from game.timer import Timer
+from game.utils import load_sprite, text_to_sprite
+
+from solver import Algorithm, solver, ids
+from graph import Graph, Node, Tube, Game
 from threading import Thread
 
 
@@ -650,7 +657,7 @@ class UI:
         if tube == self.selected:
             self.deselect()
         elif self.selected >= 0:
-            if self.cur_game.move_ball_r(self.selected, tube):
+            if self.cur_game.move_ball(self.selected, tube):
                 self.successful_move(tube)
         else:
             self.select(tube)
@@ -718,15 +725,15 @@ class UI:
 
     def play_solved(self):
 
-        move = self.getNextMove()
+        move = self.get_next_move()
         if move[0] == -2:
             self.end_game()
             return
 
-        self.cur_game.move_ball_r(move[0], move[1])
+        self.cur_game.move_ball(move[0], move[1])
         self.watch_move(move)
         self.curNode += 1
-        next_move = self.getNextMove()
+        next_move = self.get_next_move()
         if next_move[0] != -2:
             self.update_hint_arrows(next_move)
         else:
@@ -791,7 +798,7 @@ class UI:
                 return [tube_from, tube_to]
         return [tube_from, tube_to]
 
-    def getNextMove(self):
+    def get_next_move(self):
         if (self.curNode == len(self.solvedPath) - 1):
             return [-2, -2]
         node1 = self.solvedPath[self.curNode]

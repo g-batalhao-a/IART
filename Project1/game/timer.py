@@ -11,8 +11,8 @@ class Timer:
     def start_timer(self):
         self.timer = time.time() + self.time
 
-    def update_timer(self, newTime):
-        self.time = newTime
+    def update_timer(self, new_time):
+        self.time = new_time
         self.timer = time.time() + self.time
 
     def check_timer(self):

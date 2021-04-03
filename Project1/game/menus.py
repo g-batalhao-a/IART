@@ -1,6 +1,6 @@
 import pygame
 
-from game.utils import *
+from game.utils import load_sprite, text_to_sprite
 
 # Screen Dimensions
 screen_width = 1400
@@ -230,14 +230,12 @@ class GameMenu:
     def check_menu_cols(self):
         mouse_pos = pygame.mouse.get_pos()
 
-        if self.curr_page > 0:
-            if self.prev.sprite.rect.collidepoint(mouse_pos):
-                self.curr_page -= 1
-                return -2
-        if self.curr_page < self.total_pages:
-            if self.next.sprite.rect.collidepoint(mouse_pos):
-                self.curr_page += 1
-                return -2
+        if self.curr_page > 0 and self.prev.sprite.rect.collidepoint(mouse_pos):
+            self.curr_page -= 1
+            return -2
+        if self.curr_page < self.total_pages and self.next.sprite.rect.collidepoint(mouse_pos):
+            self.curr_page += 1
+            return -2
         i = 0
         for k in self.levels[self.curr_page]:
             i += 1

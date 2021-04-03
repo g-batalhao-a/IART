@@ -1,8 +1,7 @@
 import json
-
 import pygame
 
-from game.utils import *
+from game.utils import load_sprite, text_to_sprite, only_text_sprite
 
 
 # End Screen Class
