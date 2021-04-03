@@ -1,3 +1,4 @@
+import copy
 from tube import Tube, Game
 
 class Node:
@@ -106,7 +107,7 @@ class Node:
         for tube in self.gamestate.tubes:
             balls = tube.balls.copy()
 
-            if (len(balls) == 0): continue
+            if len(balls) == 0: continue
 
             idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
             if idx == -1: continue
@@ -160,7 +161,7 @@ class Node:
         tubes. 
         Although it is not optimal since this isn't a valid heuristics,
         our tests demonstrated that this heuristics converges really 
-        fast to avery good solution.
+        fast to every good solution.
 
         Returns:
             int: Node score, the higher the better
