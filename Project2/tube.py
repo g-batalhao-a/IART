@@ -1,4 +1,7 @@
 import copy
+import random
+import gym
+
 
 class Tube:
     def __init__(self, balls: list = None, capacity: int = 4) -> None:
@@ -38,7 +41,6 @@ class Tube:
         """
         return self.balls[-1]
 
-
     def remove_ball(self):
         """Removes the top ball of a tube
 
@@ -59,7 +61,6 @@ class Tube:
             if self.balls[i] != self.balls[i - 1]:
                 return False
         return True
-
 
     def put_ball(self, ball):
         """Put ball in tube
@@ -97,12 +98,38 @@ class Tube:
     def get_balls(self):
         return self.balls
 
+    def __eq__(self, other):
+        if len(self.balls) != len(other.balls): return False
+        for i in range(0, len(self.balls)):
+            if self.balls[i] != other.balls[i]: return False
+        return True
 
-class Game:
+    def __hash__(self):
+        hash = 0
+        pos = 0
+        for i in self.balls:
+            hash += i * pos
+        return hash * len(self.balls)
+
+
+class Game(gym.Space):
     def __init__(self, tubes: list) -> None:
-        self.tubes=[]
+        self.tubes = []
         for tube in tubes:
             self.tubes.append(Tube(tube))
+            self.num_of_colors = self.calculate_colors()
+
+    def calculate_colors(self):
+        """Get number of colors in the game
+        Returns:
+            int: Number of different colors in the game
+        """
+        colors = set()
+        for tube in self.tubes:
+            balls = tube.get_balls()
+            for ball in balls:
+                colors.add(ball)
+        return len(colors)
 
     def finished(self):
         """Checks if the game is finished
@@ -132,7 +159,6 @@ class Game:
         else:
             return self.tubes[to_i].put_ball(self.tubes[from_i].remove_ball())
 
-
     def print(self):
         """Print a game state
         """
@@ -143,29 +169,52 @@ class Game:
 
         print(" --- " * len(self.tubes))
 
-    # IF INVALID STATE_: -10 
+    # IF INVALID STATE_: -1000 
     # FOR EACH TUBE:
-    #  - COUNT BALLS OF SAME COLOUR FROM BOTTOM TOP, 1*consecutive balls
-    #  - COUNT NUMBER OF INCORRECTLY PLACED BALLS (not sure of this): -1
-    def evaluate(self):
+    #  - COUNT BALLS OF SAME COLOUR FROM BOTTOM TOP, 5*consecutive balls
+    #  - COUNT NUMBER OF INCORRECTLY PLACED BALLS (not sure of this): -1*wrongly placed
+    # COMPLETED TUBE: +20
+    def evaluate(self, valid: bool):
+        if not valid: return -1000
+        if self.finished(): return 50
         reward = 0
 
-        for tube in self.gamestate.tubes:
+        for tube in self.tubes:
             balls = tube.balls.copy()
 
             if len(balls) == 0: continue
 
             idx = next((i for i, v in enumerate(balls) if v != balls[0]), -1)
-            if idx == -1: reward +=len(balls)
-
-            balls = balls[idx:]
-            reward -= len(balls)
+            if idx == -1:
+                if len(balls) == 4:
+                    reward += 5
+                else:
+                    reward += len(balls)
+            else:
+                balls = balls[idx:]
+                reward -= len(balls)*10
 
         return reward
 
     def to_list(self):
-        list=[]
+        list = []
         for tube in self.tubes:
             list.append(tube.get_balls())
+        return list
 
+    def __eq__(self, other):
+        for i in range(0, len(self.tubes)):
+            if self.tubes[i].__eq__(other.tubes[i]): return False
+        return True
 
+    def __hash__(self):
+        hash = 0
+        for i in range(0, len(self.tubes)):
+            hash += self.tubes[i].__hash__() * i
+        return hash
+
+    def sample(self):
+        return ""
+
+    def contains(self, x):
+        return ""
