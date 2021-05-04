@@ -50,5 +50,5 @@ class Environment(gym.Env):
         state = self.state
         valid = state.move_ball(from_tube, to_tube)
 
-        reward = state.evaluate(valid)
+        reward = state.evaluate3(valid, to_tube)
         return state, reward

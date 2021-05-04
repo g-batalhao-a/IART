@@ -195,6 +195,20 @@ class Game(gym.Space):
                 reward -= len(balls)*10
 
         return reward
+    
+
+    def evaluate2(self, valid: bool):
+        if not valid: return -10
+        if self.finished(): return 20
+        return -1
+    
+    def evaluate3(self, valid: bool, to_tube):
+        if not valid: return -10
+        if self.finished(): return 20
+        
+        if self.tubes[to_tube].is_completed():
+            return 5
+        return -1
 
     def to_list(self):
         list = []
