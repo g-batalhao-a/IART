@@ -9,7 +9,7 @@ import numpy as np
 # ACTION % num of tubes = TO TUBE
 
 # OBSERVATION SPACE/STATE - THE PUZZLE ITSELF
-# e.g. [[1],[1,1,1]]
+# e.g. [[1],[1,1,1]] -> 
 
 class Environment(gym.Env):
     state = tube.Game([])
@@ -25,6 +25,7 @@ class Environment(gym.Env):
         self.put_dict(state)
         done = state.finished()
         info = {}
+        self.state=state
         return state, reward, done, info
 
     def reset(self):

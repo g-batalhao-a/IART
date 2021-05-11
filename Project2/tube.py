@@ -198,16 +198,14 @@ class Game(gym.Space):
     
 
     def evaluate2(self, valid: bool):
-        if not valid: return -10
+        if not valid: return -5
         if self.finished(): return 20
         return -1
     
     def evaluate3(self, valid: bool, to_tube):
-        if not valid: return -10
-        if self.finished(): return 20
-        
+        if not valid: return -10        
         if self.tubes[to_tube].is_completed():
-            return 5
+            return 20
         return -1
 
     def to_list(self):
