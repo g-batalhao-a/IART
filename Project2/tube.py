@@ -1,6 +1,7 @@
 import copy
 import random
 import gym
+import math
 
 
 class Tube:
@@ -118,6 +119,19 @@ class Game(gym.Space):
         for tube in tubes:
             self.tubes.append(Tube(tube))
             self.num_of_colors = self.calculate_colors()
+        self.n = self.calculate_possible_states()
+
+    def calculate_possible_states(self):
+        num_places = len(self.tubes) * 4
+
+        combinations = 1
+
+        for i in range(self.num_of_colors):
+            combinations = combinations * math.comb(num_places - i * 4, 4)
+
+        return combinations
+
+        #return int(factorial(num_places)) // (int(pow(factorial(4), self.num_of_colors) + int(perm(self.tubes, 2))));
 
     def calculate_colors(self):
         """Get number of colors in the game
@@ -203,9 +217,10 @@ class Game(gym.Space):
         return -1
     
     def evaluate3(self, valid: bool, to_tube):
-        if not valid: return -10        
+        if not valid: return -50
+        if self.finished(): return 20
         if self.tubes[to_tube].is_completed():
-            return 20
+            return 10
         return -1
 
     def to_list(self):
@@ -215,8 +230,9 @@ class Game(gym.Space):
         return list
 
     def __eq__(self, other):
-        for i in range(0, len(self.tubes)):
-            if self.tubes[i].__eq__(other.tubes[i]): return False
+        for tube in self.tubes:
+            if tube not in other.tubes:
+                return False
         return True
 
     def __hash__(self):

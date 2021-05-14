@@ -1,6 +1,8 @@
 import gym
 import tube
 import numpy as np
+import copy
+from math import perm
 
 
 # ACTION SPACE - MOVE BALL FROM X TO Y 
@@ -12,24 +14,26 @@ import numpy as np
 # e.g. [[1],[1,1,1]] -> 
 
 class Environment(gym.Env):
-    state = tube.Game([])
     states = {}
     i = 0
 
-    def __init__(self):
-        self.action_space = gym.spaces.Discrete(4)  # num of tubes ^ num of tubes
-        self.observation_space = tube.Game([])  # puzzle
+    def __init__(self, game):
+        self.initial_state = copy.deepcopy(game)
+        self.n_tubes = len(game)
+        self.state = tube.Game(game)
+        self.action_space = gym.spaces.Discrete(pow(len(game), 2))  # Combinacoes de N, 2 a 2 (N = numero de tubos)
+        self.observation_space = tube.Game(game)  # puzzle
 
     def step(self, action):
-        state, reward = self.react(action)
+        state, reward, from_tube, to_tube = self.react(action)
         self.put_dict(state)
         done = state.finished()
-        info = {}
+        info = {'from_tube': from_tube, 'to_tube': to_tube}
         self.state=state
         return state, reward, done, info
 
     def reset(self):
-        self.state = tube.Game([[1], [1, 1, 1]])
+        self.state = tube.Game(copy.deepcopy(self.initial_state))
         self.put_dict(self.state)
         return self.state
 
@@ -45,11 +49,13 @@ class Environment(gym.Env):
         return self.states[o]
 
     def react(self, action):
-        from_tube = action // 2
-        to_tube = action % 2
+        from_tube = action // self.n_tubes
+        to_tube = action % self.n_tubes
 
-        state = self.state
-        valid = state.move_ball(from_tube, to_tube)
+        if from_tube == to_tube:
+            valid = False
+        else:
+            valid = self.state.move_ball(from_tube, to_tube)
 
-        reward = state.evaluate3(valid, to_tube)
-        return state, reward
+        reward = self.state.evaluate3(valid, to_tube)
+        return self.state, reward, from_tube, to_tube
