@@ -3,6 +3,8 @@ import random
 import gym
 import math
 
+from sympy.utilities.iterables import variations, multiset_permutations
+
 
 class Tube:
     def __init__(self, balls: list = None, capacity: int = 4) -> None:
@@ -106,11 +108,12 @@ class Tube:
         return True
 
     def __hash__(self):
-        hash = 0
+        hash_val = 0
         pos = 0
         for i in self.balls:
-            hash += i * pos
-        return hash * len(self.balls)
+            hash_val += i * pos
+            pos = pos + 1
+        return hash_val * len(self.balls)
 
 
 class Game(gym.Space):
@@ -119,19 +122,39 @@ class Game(gym.Space):
         for tube in tubes:
             self.tubes.append(Tube(tube))
             self.num_of_colors = self.calculate_colors()
+        
+        self.n_tubes = len(self.tubes)
         self.n = self.calculate_possible_states()
 
     def calculate_possible_states(self):
-        num_places = len(self.tubes) * 4
+        # All balls of the state
+        balls = [x for x in range(1, self.num_of_colors + 1)] * 4
 
-        combinations = 1
+        # All possible tube configurations
+        configurations = [x for x in variations([0, 1, 2, 3, 4], self.n_tubes, True) if sum(x) == 4 * self.num_of_colors]
 
-        for i in range(self.num_of_colors):
-            combinations = combinations * math.comb(num_places - i * 4, 4)
+        balls_permutations = multiset_permutations(balls)
 
-        return combinations
+        return len(self.generate_states(balls_permutations, configurations))
+        #return len(balls_permutations) * len(configurations)
 
-        #return int(factorial(num_places)) // (int(pow(factorial(4), self.num_of_colors) + int(perm(self.tubes, 2))));
+
+    def generate_states(self, perms, configurations):
+        states = []
+        for configuration in configurations:
+            for perm in perms:
+                tmp = []
+                idx = 0
+                for i in range(0, self.n_tubes):
+                    if i == 0: 
+                        tmp.append(list(perm[:configuration[i]]))
+                    elif i == self.n_tubes - 1: 
+                        tmp.append(list(perm[idx:]))
+                    else: 
+                        tmp.append(list(perm[idx: idx + configuration[i]]))
+                    idx += configuration[i]
+                states.append(tmp)
+        return list(states)
 
     def calculate_colors(self):
         """Get number of colors in the game
@@ -172,6 +195,28 @@ class Game(gym.Space):
             return False
         else:
             return self.tubes[to_i].put_ball(self.tubes[from_i].remove_ball())
+
+    def get_possible_actions(self):
+        """Get current game state's possible actions
+
+        Returns:
+            list: List of possible actions
+        """
+        actions = []
+        for action in range(0, pow(len(self.tubes), 2)):
+            from_tube = action // self.n_tubes
+            to_tube = action % self.n_tubes
+
+            if from_tube == to_tube:
+                continue
+
+            if self.tubes[from_tube].is_empty() or self.tubes[to_tube].is_full():
+                continue
+
+            if self.tubes[to_tube].is_empty() or self.tubes[from_tube].get_ball() == self.tubes[to_tube].get_ball():
+                actions.append(action)
+
+        return actions
 
     def print(self):
         """Print a game state
@@ -217,10 +262,9 @@ class Game(gym.Space):
         return -1
     
     def evaluate3(self, valid: bool, to_tube):
-        if not valid: return -50
-        if self.finished(): return 20
+        if self.finished(): return 2
         if self.tubes[to_tube].is_completed():
-            return 10
+            return 1
         return -1
 
     def to_list(self):
@@ -236,10 +280,11 @@ class Game(gym.Space):
         return True
 
     def __hash__(self):
-        hash = 0
-        for i in range(0, len(self.tubes)):
-            hash += self.tubes[i].__hash__() * i
-        return hash
+        tubes = sorted(self.tubes, key=lambda x: x.__hash__())
+        hash_val = 0
+        for i in range(0, len(tubes)):
+            hash_val += tubes[i].__hash__() * (i + 1)
+        return hash_val
 
     def sample(self):
         return ""
