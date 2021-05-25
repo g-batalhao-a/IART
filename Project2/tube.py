@@ -262,7 +262,7 @@ class Game(gym.Space):
         return -1
     
     def evaluate3(self, valid: bool, to_tube):
-        if self.finished(): return 2
+        if self.finished(): return 10
         if self.tubes[to_tube].is_completed():
             return 1
         return -1
