@@ -99,6 +99,11 @@ class Tube:
         return self.all_same_colored() and self.is_full()
 
     def get_balls(self):
+        """Returns the balls of the Tube
+
+        Returns:
+            list: balls of the tube
+        """
         return self.balls
 
     def __eq__(self, other):
@@ -127,6 +132,11 @@ class Game(gym.Space):
         self.n = self.calculate_possible_states()
 
     def calculate_possible_states(self):
+        """Calculates the number of states from an initial configuration
+
+        Returns:
+            int: number of states
+        """
         # All balls of the state
         balls = [x for x in range(1, self.num_of_colors + 1)] * 4
 
@@ -140,6 +150,11 @@ class Game(gym.Space):
 
 
     def generate_states(self, perms, configurations):
+        """Generates the states from a given configuration
+
+        Returns:
+            list: states
+        """
         states = []
         for configuration in configurations:
             for perm in perms:
@@ -228,12 +243,19 @@ class Game(gym.Space):
 
         print(" --- " * len(self.tubes))
 
-    # IF INVALID STATE_: -1000 
-    # FOR EACH TUBE:
-    #  - COUNT BALLS OF SAME COLOUR FROM BOTTOM TOP, 5*consecutive balls
-    #  - COUNT NUMBER OF INCORRECTLY PLACED BALLS (not sure of this): -1*wrongly placed
-    # COMPLETED TUBE: +20
+    
     def evaluate(self, valid: bool):
+        """Evaluates a state
+
+        IF INVALID STATE_: -1000 
+        FOR EACH TUBE:
+        - COUNT BALLS OF SAME COLOUR FROM BOTTOM TOP, 5*consecutive balls
+        - COUNT NUMBER OF INCORRECTLY PLACED BALLS (not sure of this): -1*wrongly placed
+        COMPLETED TUBE: +20
+
+        Returns:
+            int: reward
+        """
         if not valid: return -1000
         if self.finished(): return 50
         reward = 0
@@ -257,11 +279,29 @@ class Game(gym.Space):
     
 
     def evaluate2(self, valid: bool):
+        """Evaluates a state
+
+        IF INVALID STATE: -5 
+        IF FINISHED GAME: +20
+        ELSE -1
+
+        Returns:
+            int: reward
+        """
         if not valid: return -5
         if self.finished(): return 20
         return -1
     
     def evaluate3(self, valid: bool, to_tube):
+        """Evaluates a state
+        
+        IF FINISHED GAME: +10
+        IF FINISHED TUBE STATE: +1 
+        ELSE -1
+
+        Returns:
+            int: reward
+        """
         if self.finished(): return 10
         if self.tubes[to_tube].is_completed():
             return 1
@@ -285,9 +325,3 @@ class Game(gym.Space):
         for i in range(0, len(tubes)):
             hash_val += tubes[i].__hash__() * (i + 1)
         return hash_val
-
-    def sample(self):
-        return ""
-
-    def contains(self, x):
-        return ""
